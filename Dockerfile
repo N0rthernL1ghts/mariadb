@@ -7,13 +7,7 @@ ENV S6_KEEP_ENV=1
 ENV S6_SYNC_DISKS=1
 ENV S6_FIX_ATTRS_HIDDEN=1
 
-
-EXPOSE 3306
-
-VOLUME ["/var/lib/mysql", "/var/lib/backup"]
 WORKDIR /root
-ENTRYPOINT ["/usr/bin/entrypoint"]
-CMD ["/bin/s6-svscan", "/etc/s6"]
 
 ENV CRON_ENABLED=true
 
@@ -22,3 +16,6 @@ RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
 ADD rootfs /
+
+VOLUME ["/var/lib/mysql", "/var/lib/backup"]
+EXPOSE 3306
