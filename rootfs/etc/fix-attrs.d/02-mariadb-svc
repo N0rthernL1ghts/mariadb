@@ -1,0 +1,4 @@
+/etc/services.d/mariadb/run true root 0764 0764
+/etc/services.d/mariadb/setup true root 0764 0764
+/etc/services.d/mariadb/finish true root 0764 0764
+
