@@ -1,10 +1,12 @@
-FROM webhippie/alpine:latest-amd64
+FROM nlss/base-alpine:latest as mariadb-s6
 
-LABEL maintainer="Thomas Boerger <thomas@webhippie.de>" \
-  org.label-schema.name="MariaDB" \
-  org.label-schema.version="latest" \
-  org.label-schema.vendor="Thomas Boerger" \
-  org.label-schema.schema-version="1.0"
+LABEL maintainer="Aleksandar Puharic <xzero@elite7hackers.net>"
+
+# S6 Supervisor config
+S6_KEEP_ENV=1
+S6_SYNC_DISKS=1
+S6_FIX_ATTRS_HIDDEN=1
+
 
 EXPOSE 3306
 
@@ -13,14 +15,11 @@ WORKDIR /root
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["/bin/s6-svscan", "/etc/s6"]
 
-ENV CRON_ENABLED true
+ENV CRON_ENABLED=true
 
-RUN apk update && \
-  apk upgrade && \
-  mkdir -p /var/lib/mysql && \
-  groupadd -g 1000 mysql && \
-  useradd -u 1000 -d /var/lib/mysql -g mysql -s /bin/bash -m mysql && \
-  apk add mariadb mariadb-client mariadb-server-utils tzdata && \
-  rm -rf /var/cache/apk/* /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
+RUN apk --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
+    && groupadd -g 1000 mysql \
+    && useradd -u 1000 -d /var/lib/mysql -g mysql -s /bin/bash -m mysql \
+    && /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
-COPY ./overlay ./overlay-amd64 /
+ADD rootfs /
