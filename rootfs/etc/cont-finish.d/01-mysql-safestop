@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash
 set -e
-echo "Attempting to safely shutdown mysql service..."
+echo "Attempting to safely shutdown mariadb service..."
 mysqladmin shutdown
