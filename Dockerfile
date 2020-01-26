@@ -6,6 +6,7 @@ LABEL maintainer="Aleksandar Puharic <xzero@elite7hackers.net>"
 ENV S6_KEEP_ENV=1
 ENV S6_SYNC_DISKS=1
 ENV S6_FIX_ATTRS_HIDDEN=1
+ENV S6_SERVICES_GRACETIME=5000
 
 WORKDIR /root
 

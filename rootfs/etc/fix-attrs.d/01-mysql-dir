@@ -1,1 +1,4 @@
-/var/lib/mysql true mysql 0751 0751
+/var false root 0755 0755
+/var/lib false root 0755 0755
+/var/lib/mysql true mysql:mysql 4777 4777
+/etc/mysql/my.cnf true root 0640 0640
