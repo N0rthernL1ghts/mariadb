@@ -7,6 +7,7 @@ mysql << EOF
    SET GLOBAL innodb_max_dirty_pages_pct=0;
    FLUSH LOCAL TABLES;
    FLUSH TABLES WITH READ LOCK;
+   SET SESSION TRANSACTION READ ONLY;
 EOF
 
 mysqladmin shutdown -v
