@@ -92,8 +92,3 @@ echo "> writing mariadb config"
 /usr/bin/gomplate -V \
   -o /etc/mysql/my.cnf \
   -f /etc/templates/my.cnf.tmpl
-
-echo "> writing mariadb user credentials config"
-/usr/bin/gomplate -V \
-  -o /root/.my.cnf \
-  -f /etc/templates/my.cnf-home.tmpl

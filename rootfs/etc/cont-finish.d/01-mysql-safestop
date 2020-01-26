@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash
-echo "Attempting to stop mysql service..."
-mysqladmin -h 127.0.0.1 shutdown
-exit 0
+set -e
+echo "Attempting to safely shutdown mysql service..."
+mysqladmin shutdown
