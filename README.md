@@ -8,7 +8,7 @@ These are docker images for [MariaDB](https://mariadb.org) database running on a
 
 ## Versions
 
-* [latest](./latest) available as `webhippie/mariadb:latest`
+* [latest](./latest) available as `nlss/mariadb:latest`
 
 
 ## Volumes
