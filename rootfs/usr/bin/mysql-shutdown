@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 set -e
 
-mysql << EOF
+mysql --password="${MARIADB_ROOT_PASSWORD}" << EOF
    SET GLOBAL innodb_fast_shutdown=0;
    SET GLOBAL innodb_max_dirty_pages_pct=0;
 EOF
 
-mysqladmin shutdown -v
+mysqladmin shutdown --password="${MARIADB_ROOT_PASSWORD}" -v
