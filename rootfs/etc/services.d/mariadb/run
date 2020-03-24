@@ -1,5 +1,7 @@
 #!/usr/bin/with-contenv bash
 
+INIT_FILE='/tmp/mariadb-boot.sql'
+
 if [ -f ./setup ]
 then
   source ./setup
@@ -16,4 +18,11 @@ fi
 STARTCMD="mysqld_safe"
 
 echo "> starting mariadb service"
-exec ${STARTCMD}
+
+# Init file will exist only if database was not previously initialized (@see /etc/cont-init.d/02-init-database)
+if [ -f "${INIT_FILE}" ]
+then
+  exec ${STARTCMD} --init-file="${INIT_FILE}"
+else
+  exec ${STARTCMD}
+fi
