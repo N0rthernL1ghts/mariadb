@@ -22,6 +22,7 @@ echo "> starting mariadb service"
 # Init file will exist only if database was not previously initialized (@see /etc/cont-init.d/02-init-database)
 if [ -f "${INIT_FILE}" ]
 then
+  echo "> with datababase init"
   exec ${STARTCMD} --init-file="${INIT_FILE}"
 else
   exec ${STARTCMD}
