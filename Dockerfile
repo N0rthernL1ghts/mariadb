@@ -20,7 +20,7 @@ RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
 # Install gomplate
-COPY --from=hairyhenderson/gomplate:v3.6.0-slim /gomplate /usr/bin/gomplate
+COPY --from=hairyhenderson/gomplate:v3.7.0-slim /gomplate /usr/bin/gomplate
 
 ADD rootfs /
 
