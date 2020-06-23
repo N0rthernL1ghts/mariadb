@@ -1,7 +1,8 @@
 # MariaDB
 
-[![Build Status](https://cloud.drone.io/api/badges/dockhippie/mariadb/status.svg)](https://cloud.drone.io/dockhippie/mariadb)
-[![](https://images.microbadger.com/badges/image/webhippie/mariadb.svg)](https://microbadger.com/images/webhippie/mariadb "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/nlss/mariadb.svg)](https://microbadger.com/images/nlss/mariadb "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/image/nlss/mariadb.svg)](https://microbadger.com/images/nlss/mariadb "Get your own image badge on microbadger.com")
+
 
 These are docker images for [MariaDB](https://mariadb.org) database running on an [Alpine Linux container](https://registry.hub.docker.com/u/webhippie/alpine/).
 
@@ -72,6 +73,7 @@ Fork -> Patch -> Push -> Pull Request
 
 ## Authors
 
+* [Aleksandar Puharic](https://github.com/xZero707)
 * [Thomas Boerger](https://github.com/tboerger)
 
 
@@ -83,5 +85,6 @@ MIT
 ## Copyright
 
 ```
-Copyright (c) 2015 Thomas Boerger <http://www.webhippie.de>
+Fork: Copyright (c) 2020 Aleksandar Puharic  <https://www.puharic.com>
+Original author: Copyright (c) 2015 Thomas Boerger <http://www.webhippie.de>
 ```
