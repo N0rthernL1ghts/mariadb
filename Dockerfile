@@ -16,6 +16,8 @@ WORKDIR /root
 ENV CRON_ENABLED=true
 
 RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
+    && wget -O /usr/local/bin/attr https://gist.githubusercontent.com/xZero707/7a3fb3e12e7192c96dbc60d45b3dc91d/raw/44a755181d2677a7dd1c353af0efcc7150f15240/attr.sh \
+    && chmod a+x /usr/local/bin/attr \
     && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
