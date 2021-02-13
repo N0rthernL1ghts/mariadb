@@ -1,4 +1,4 @@
-FROM nlss/base-alpine:3.12-110 as mariadb-s6
+FROM nlss/base-alpine:3.12 as mariadb-s6
 
 LABEL maintainer="Aleksandar Puharic <xzero@elite7hackers.net>"
 
