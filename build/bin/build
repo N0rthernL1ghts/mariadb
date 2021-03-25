@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+docker pull nlss/base-alpine:3.12
+docker build --tag "nlss/mariadb:latest" .
+docker push --all-tags nlss/mariadb
