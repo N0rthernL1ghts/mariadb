@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATABASES=$(mysql --password=${MARIADB_ROOT_PASSWORD} --user=root -e 'show databases;' | sed 1d | grep -v -E "(mysql|information_schema|performance_schema)")
+DATABASES=$(mysql -e 'show databases;' | sed 1d | grep -v -E "(mysql|information_schema|performance_schema)")
 MAXIMUM=14
 
 if [ "${DATABASES}" == "" ]
@@ -23,7 +23,7 @@ do
     rm -f /tmp/mysql-${DATABASE}.sql
   fi
 
-  mysqldump --add-locks --password=${MARIADB_ROOT_PASSWORD} --user=root ${DATABASE} > /tmp/mysql-${DATABASE}.sql
+  mysqldump --add-locks ${DATABASE} > /tmp/mysql-${DATABASE}.sql
 done
 
 for (( COUNTER=$MAXIMUM; COUNTER>=1; COUNTER-- ))

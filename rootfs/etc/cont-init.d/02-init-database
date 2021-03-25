@@ -21,7 +21,9 @@ then
 
   echo "" >| ${INIT_FILE}
   echo "DELETE FROM mysql.user;" >> ${INIT_FILE}
+  echo "CREATE USER 'root'@'localhost';" >> ${INIT_FILE}
   echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';" >> ${INIT_FILE}
+  echo "GRANT ALL ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" >> ${INIT_FILE}
   echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION;" >> ${INIT_FILE}
   echo "DROP DATABASE IF EXISTS test;" >> ${INIT_FILE}
   echo "FLUSH PRIVILEGES;" >> ${INIT_FILE}
