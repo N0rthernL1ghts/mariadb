@@ -1,0 +1,41 @@
+version: "3.7"
+
+services:
+  database:
+    image: 'local/mariadb'
+    build:
+      context: .
+    environment:
+      MARIADB_USERNAME: 'webapp'
+      MARIADB_PASSWORD: 'example_password'
+      MARIADB_DATABASE: 'app,cars,docs'
+      MARIADB_ROOT_PASSWORD: 'example_password'
+    volumes:
+      - data:/var/lib/mysql
+      - backup:/var/lib/backup
+      - log:/var/log/mysql
+    networks:
+      default: {aliases: [database]}
+      database: null
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      restart_policy:
+        condition: on-failure
+      resources:
+        reservations:
+          memory: 2G
+        limits:
+          memory: 3G
+
+networks:
+  default:
+  database:
+
+volumes:
+  backup:
+  data:
+  log:
