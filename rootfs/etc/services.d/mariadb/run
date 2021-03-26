@@ -2,28 +2,12 @@
 
 INIT_FILE='/tmp/mariadb-boot.sql'
 
-if [ -f ./setup ]
-then
-  source ./setup
-fi
-
-if [ -d ./custom.d ]
-then
-  for FILE in $(find ./custom.d -type f -iname \*.sh | sort)
-  do
-    source ${FILE}
-  done
-fi
-
-STARTCMD="mysqld_safe"
-
-echo "> starting mariadb service"
+echo "> Starting mariadb service"
 
 # Init file will exist only if database was not previously initialized (@see /etc/cont-init.d/02-init-database)
-if [ -f "${INIT_FILE}" ]
-then
-  echo "> with datababase init"
-  exec ${STARTCMD} --init-file="${INIT_FILE}"
-else
-  exec ${STARTCMD}
+if [ -f "${INIT_FILE}" ]; then
+  echo "> With database init"
+  exec mysqld_safe --init-file="${INIT_FILE}"
 fi
+
+exec mysqld_safe
