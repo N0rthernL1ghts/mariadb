@@ -19,7 +19,7 @@ function writeMySqlInit() {
   fi
 
   echo "> Writing to file '${TARGET_FILE}'"
-  echo "${DATA}" >"${TARGET_FILE}"
+  echo -en "${DATA}" >"${TARGET_FILE}"
 
   if [ ! -f "${TARGET_FILE}" ]; then
     echo "> Error: Write failed"
@@ -41,10 +41,10 @@ function initDatabases() {
 
   for DATABASE in ${DATABASES}; do
     echo "> Create database '${DATABASE}'"
-    addToMySqlInit "CREATE DATABASE IF NOT EXISTS '${DATABASE}';"
+    addToMySqlInit "CREATE DATABASE IF NOT EXISTS \`${DATABASE}\`;"
 
     if [ -n "${DB_USER}" ]; then
-      addToMySqlInit "GRANT ALL PRIVILEGES ON '${DATABASE}'.* TO '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
+      addToMySqlInit "GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
     fi
 
   done
@@ -76,6 +76,7 @@ fi
 echo "> Create MySQL user root@%"
 addToMySqlInit "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
 
+# Create non-administrative user if defined
 if [ -n "${MARIADB_USERNAME}" ]; then
   if [ -z "${MARIADB_PASSWORD}" ]; then
     echo "> Error: Refusing to create user without password"
