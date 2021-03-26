@@ -3,6 +3,7 @@ set -e
 
 INIT_FILE="/tmp/mariadb-boot.sql"
 INIT_SQL=""
+rm "${INIT_FILE}" -f
 
 function addToMySqlInit() {
   CODE="${1:-}"
