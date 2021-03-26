@@ -1,7 +1,5 @@
 #!/usr/bin/with-contenv sh
 set -e
 
-attr /var/log/mysql/ true mysql:mysql 0770 2771
 attr /var/lib/mysql/ true mysql:mysql 0770 2771
 attr /var/lib/backup/ true mysql:mysql 0770 2771
-attr /etc/mysql/my.cnf true root 0640 0640
