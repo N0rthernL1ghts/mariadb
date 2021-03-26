@@ -2,49 +2,96 @@
 set -e
 
 INIT_FILE="/tmp/mariadb-boot.sql"
+INIT_SQL=""
 
-# Delete init file if already exists
-rm -f "${INIT_FILE}"
+function addToMySqlInit() {
+  CODE="${1:-}"
+  INIT_SQL="${INIT_SQL}\n${CODE}"
+}
 
-if [ ! -d "/var/lib/mysql/mysql" ]
-then
-  if [ -z "${MARIADB_ROOT_PASSWORD}" ]
-  then
-    echo >&2 "Error: Database is uninitialized and MARIADB_ROOT_PASSWORD not set"
-    s6-svscanctl -t /var/run/s6/services
+function writeMySqlInit() {
+  TARGET_FILE="${1:-}"
+  DATA="${2:-}"
+
+  if [ -z "${DATA}" ]; then
+    echo "> Warning: Nothing to write"
+  fi
+
+  echo "> Writing to file '${TARGET_FILE}'"
+  echo "${DATA}" >"${TARGET_FILE}"
+
+  if [ ! -f "${TARGET_FILE}" ]; then
+    echo "> Error: Write failed"
+    exit 1
+  fi
+}
+
+function initDatabases() {
+  echo "> Init defined databases"
+
+  if [ -z "${1:-}" ]; then
+    echo "> Warning: No databases defined"
+    return
+  fi
+
+  DATABASES=$(echo "${1:-}" | tr "," "\n")
+  DB_USER="${2:-}"
+  DB_PASSWORD="${3:-}"
+
+  for DATABASE in ${DATABASES}; do
+    echo "> Create database '${DATABASE}'"
+    addToMySqlInit "CREATE DATABASE IF NOT EXISTS '${DATABASE}';"
+
+    if [ -n "${DB_USER}" ]; then
+      addToMySqlInit "GRANT ALL PRIVILEGES ON '${DATABASE}'.* TO '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
+    fi
+
+  done
+}
+
+echo "> [MariaDB Bootstrap v2.0]"
+
+echo "> Checking if MariaDB initialized..."
+if [ -d "/var/lib/mysql/mysql" ]; then
+  echo "> [OK] MariaDB already initialized."
+  exit 0
+fi
+
+echo "> MariaDB is not initialized. Proceeding with init"
+
+if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
+  echo "Error: MARIADB_ROOT_PASSWORD not defined. Cannot initialize"
+  s6-svscanctl -t /var/run/s6/services
+  exit 1
+fi
+
+echo "> Running 'mysql_install_db'"
+
+if ! mysql_install_db --user=mysql --datadir="/var/lib/mysql"; then
+  echo "Error: 'mysql_install_db' exited with non-zero code"
+  exit 1
+fi
+
+echo "> Create MySQL user root@%"
+addToMySqlInit "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
+
+if [ -n "${MARIADB_USERNAME}" ]; then
+  if [ -z "${MARIADB_PASSWORD}" ]; then
+    echo "> Error: Refusing to create user without password"
     exit 1
   fi
 
-  echo "> running mysql_install_db..."
-  mysql_install_db --user=mysql --datadir="/var/lib/mysql"
-  echo "> finished mysql_install_db"
-
-  echo "" >| ${INIT_FILE}
-  echo "DELETE FROM mysql.user;" >> ${INIT_FILE}
-  echo "CREATE USER 'root'@'localhost';" >> ${INIT_FILE}
-  echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';" >> ${INIT_FILE}
-  echo "GRANT ALL ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" >> ${INIT_FILE}
-  echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION;" >> ${INIT_FILE}
-  echo "DROP DATABASE IF EXISTS test;" >> ${INIT_FILE}
-  echo "FLUSH PRIVILEGES;" >> ${INIT_FILE}
-
-  if [[ -n "${MARIADB_USERNAME}" && -n "${MARIADB_DATABASE}" ]]
-  then
-    DATABASES=$(echo ${MARIADB_DATABASE} | tr "," "\n")
-
-    for DATABASE in ${DATABASES}
-    do
-      echo "CREATE DATABASE IF NOT EXISTS \`${DATABASE}\`;" >> ${INIT_FILE}
-      echo "GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';" >> ${INIT_FILE}
-    done
-
-    echo "FLUSH PRIVILEGES;" >> ${INIT_FILE}
-  fi
-
-  if [[ -n "${MARIADB_USERNAME}" && -z "${MARIADB_DATABASE}" ]]
-  then
-    echo "CREATE DATABASE IF NOT EXISTS \`${MARIADB_USERNAME}\`;" >> ${INIT_FILE}
-    echo "GRANT ALL PRIVILEGES ON \`${MARIADB_USERNAME}\`.* TO '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';" >> ${INIT_FILE}
-    echo "FLUSH PRIVILEGES;" >> ${INIT_FILE}
-  fi
+  echo "> Create MySQL user ${MARIADB_USERNAME}@%"
+  addToMySqlInit "CREATE USER '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
+  echo "> Create database '${MARIADB_USERNAME}'"
+  initDatabases "${MARIADB_USERNAME},${MARIADB_DATABASE}" "${MARIADB_USERNAME}" "${MARIADB_PASSWORD}"
+else
+  echo "> Create databases for default user 'root'"
+  initDatabases "${MARIADB_DATABASE}"
 fi
+
+echo "> Remove database 'test'"
+addToMySqlInit "DROP DATABASE IF EXISTS test;"
+addToMySqlInit "FLUSH PRIVILEGES;"
+
+writeMySqlInit "${INIT_FILE}" "${INIT_SQL}"
