@@ -80,9 +80,9 @@ addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'%' IDENTIFIED BY '${M
 addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'localhost' IDENTIFIED VIA unix_socket WITH GRANT OPTION;"
 
 echo "> Create MySQL user backup@localhost (for backup daemon)"
-addToMySqlInit "CREATE USER 'backup'@'localhost' IDENTIFIED BY 'backup';"
-addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'localhost';"
-addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'localhost';"
+addToMySqlInit "CREATE USER 'backup'@'127.0.0.1' IDENTIFIED BY 'backup';"
+addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'127.0.0.1';"
+addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'127.0.0.1';"
 
 # Create non-administrative user if defined
 if [ -n "${MARIADB_USERNAME}" ]; then

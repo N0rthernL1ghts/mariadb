@@ -40,6 +40,7 @@ marsBackup() {
 
   printLn "Run 'mars' process" "DEBUG"
   mars --bind=8385 \
+    --hostname="127.0.0.1" \
     --username="backup" \
     --password="backup" \
     --databases="${TARGET_DB}" \
