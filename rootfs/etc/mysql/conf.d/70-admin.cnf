@@ -1,0 +1,5 @@
+[mysqld]
+
+# Additional port and connections capacity for admin access
+extra_port            = 8385
+extra_max_connections = 50

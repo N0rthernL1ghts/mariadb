@@ -1,56 +1,76 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+WORKDIR="/var/lib/backup"
+
+logWrite() {
+  # Arguments
+  MESSAGE=${1:-}
+  LEVEL=${2:-INFO}
+
+  # Variables
+  DATE_TIME_STAMP="$(date '+%F %H:%M:%S')"
+  LOG_FILE="/var/lib/backup/backup.log"
+
+  echo "${DATE_TIME_STAMP}  ${LEVEL}    ${MESSAGE}" >>"${LOG_FILE}"
+}
+
+printLn() {
+  MESSAGE="${1:-}"
+  LEVEL="${2:-INFO}"
+
+  logWrite "${MESSAGE}" "${LEVEL}"
+
+  if [ "${ERROR}" = "ERROR" ]; then
+    echo >&2 "> Error: ${MESSAGE}"
+    return
+  fi
+
+  if [ "${BACKUP_CRON_VERBOSE}" = "true" ]; then
+    echo "> ${MESSAGE}"
+  fi
+}
+
+marsBackup() {
+  TARGET_DB="${1:-}"
+
+  if [ -z "${TARGET_DB}" ]; then
+    printLn "TARGET_DB cannot be empty" "ERROR"
+    exit 1
+  fi
+
+  printLn "Run 'mars' process" "DEBUG"
+  mars --bind=8385 \
+    --username="backup" \
+    --password="backup" \
+    --databases="${TARGET_DB}" \
+    --batchsize="${BACKUP_BATCH_SIZE:-1000000}" \
+    --tablethreshold="${BACKUP_TABLE_THRESHOLD:-5000000}" \
+    --output-dir="${WORKDIR}" \
+    --daily-rotation="${BACKUP_RETENTION_DAYS:-5}" \
+    --weekly-rotation="${BACKUP_RETENTION_WEEKS:-2}" \
+    --monthly-rotation="${BACKUP_RETENTION_MONTHS:-1}" \
+    --additionals="--skip-comments --compact --single-transaction"
+}
+
+# Find existing databases, except mysql, information_schema and performance_schema
+printLn "Fetch databases"
 DATABASES=$(mysql -e 'show databases;' | sed 1d | grep -v -E "(mysql|information_schema|performance_schema)")
-MAXIMUM=14
 
-if [ "${DATABASES}" == "" ]
-then
-  exit
+if [ -z "${DATABASES}" ]; then
+  printLn "No databases found" "ERROR"
+  exit 1
 fi
 
-if [ ! -d /var/lib/backup ]
-then
-  mkdir -p /var/lib/backup
-  chmod 740 /var/lib/backup
+if [ ! -d "${WORKDIR}" ]; then
+  printLn "Backup path '${WORKDIR}' not found and will be created" "WARN"
+  mkdir -p "${WORKDIR}"
+  chmod 740 "${WORKDIR}"
 fi
 
-cd /tmp
-
-for DATABASE in ${DATABASES}
-do
-  if [ -f /tmp/mysql-${DATABASE}.sql ]
-  then
-    rm -f /tmp/mysql-${DATABASE}.sql
-  fi
-
-  mysqldump --add-locks ${DATABASE} > /tmp/mysql-${DATABASE}.sql
+for DATABASE in ${DATABASES}; do
+  printLn "Backing up database ${DATABASE}"
+  marsBackup "${DATABASE}"
 done
 
-for (( COUNTER=$MAXIMUM; COUNTER>=1; COUNTER-- ))
-do
-  if [ -d /var/lib/backup/backup.${COUNTER} ]
-  then
-    DEST=`expr $COUNTER + 1`
-
-    if [ $DEST -le $MAXIMUM ]
-    then
-      rm -rf /var/lib/backup/backup.${DEST}
-      mv /var/lib/backup/backup.${COUNTER} /var/lib/backup/backup.${DEST}
-    fi
-  fi
-done
-
-mkdir -p /var/lib/backup/backup.1
-chmod 740 /var/lib/backup/backup.1
-
-cd /var/lib/backup/backup.1
-
-for DATABASE in ${DATABASES}
-do
-  if [ -f /tmp/mysql-${DATABASE}.sql ]
-  then
-    mv /tmp/mysql-${DATABASE}.sql ${DATABASE}.sql
-    gzip ${DATABASE}.sql
-    chmod 640 ${DATABASE}.sql.gz
-  fi
-done
+printLn "Finished"
+echo "$(date '+%F %H:%M:%S') - Cron task has been run"

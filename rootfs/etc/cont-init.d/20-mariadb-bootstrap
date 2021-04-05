@@ -38,13 +38,14 @@ function initDatabases() {
   DATABASES=$(echo "${1:-}" | tr "," "\n")
   DB_USER="${2:-}"
   DB_PASSWORD="${3:-}"
+  DB_HOST="${4:-%}"
 
   for DATABASE in ${DATABASES}; do
     echo "> Create database '${DATABASE}'"
     addToMySqlInit "CREATE DATABASE IF NOT EXISTS \`${DATABASE}\`;"
 
     if [ -n "${DB_USER}" ]; then
-      addToMySqlInit "GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
+      addToMySqlInit "GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO '${DB_USER}'@'${DB_HOST}' IDENTIFIED BY '${DB_PASSWORD}';"
     fi
 
   done
@@ -75,6 +76,13 @@ fi
 
 echo "> Create MySQL user root@%"
 addToMySqlInit "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
+addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
+addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'localhost' IDENTIFIED VIA unix_socket WITH GRANT OPTION;"
+
+echo "> Create MySQL user backup@localhost (for backup daemon)"
+addToMySqlInit "CREATE USER 'backup'@'localhost' IDENTIFIED BY 'backup';"
+addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'localhost';"
+addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'localhost';"
 
 # Create non-administrative user if defined
 if [ -n "${MARIADB_USERNAME}" ]; then
