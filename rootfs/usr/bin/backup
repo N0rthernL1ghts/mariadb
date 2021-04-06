@@ -38,6 +38,10 @@ marsBackup() {
     exit 1
   fi
 
+  if [ "${BACKUP_CRON_VERBOSE}" != "true" ]; then
+    MARS_PROCESS_VERBOSITY=0
+  fi
+
   printLn "Run 'mars' process" "DEBUG"
   mars --bind=8385 \
     --hostname="127.0.0.1" \
@@ -50,6 +54,7 @@ marsBackup() {
     --daily-rotation="${BACKUP_RETENTION_DAYS:-5}" \
     --weekly-rotation="${BACKUP_RETENTION_WEEKS:-2}" \
     --monthly-rotation="${BACKUP_RETENTION_MONTHS:-1}" \
+    --verbosity="${MARS_PROCESS_VERBOSITY:-2}" \
     --additionals="--skip-comments --compact --single-transaction"
 }
 
