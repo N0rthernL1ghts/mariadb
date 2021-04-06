@@ -75,6 +75,7 @@ if [ ! -d "${WORKDIR}" ]; then
   chmod 740 "${WORKDIR}"
 fi
 
+# Mars can handle multiple databases, but we want more control
 for DATABASE in ${DATABASES}; do
   printLn "Backing up database ${DATABASE}"
   if ! marsBackup "${DATABASE}"; then
