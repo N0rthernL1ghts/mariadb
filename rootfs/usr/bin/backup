@@ -56,6 +56,8 @@ marsBackup() {
     --monthly-rotation="${BACKUP_RETENTION_MONTHS:-1}" \
     --verbosity="${MARS_PROCESS_VERBOSITY:-2}" \
     --additionals="--skip-comments --compact --single-transaction"
+
+  return $?
 }
 
 # Find existing databases, except mysql, information_schema and performance_schema
@@ -75,7 +77,9 @@ fi
 
 for DATABASE in ${DATABASES}; do
   printLn "Backing up database ${DATABASE}"
-  marsBackup "${DATABASE}"
+  if ! marsBackup "${DATABASE}"; then
+    printLn "Process exited with non-zero exit code" "ERROR"
+  fi
 done
 
 printLn "Finished"
