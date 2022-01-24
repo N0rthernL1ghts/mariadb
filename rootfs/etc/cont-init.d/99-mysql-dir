@@ -2,4 +2,3 @@
 set -e
 
 attr /var/lib/mysql/ true mysql:mysql 0770 2771
-attr /var/lib/backup/ true mysql:mysql 0770 2771
