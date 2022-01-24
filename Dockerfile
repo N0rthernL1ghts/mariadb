@@ -1,17 +1,27 @@
-FROM golang:alpine AS mars-builder
-
-WORKDIR "/tmp/mars"
-
-RUN apk add --no-cache git \
-    && GOPATH=/tmp/mars \
-       go get github.com/xZero707/mysql-backup-golang
+FROM nlss/attr AS attr
+FROM nlss/s6-rootfs:2.2 AS s6-overlay
+FROM hairyhenderson/gomplate:v3.9.0-alpine AS gomplate
 
 
-##########
-# Main
-FROM nlss/base-alpine:3.12 AS mariadb-s6
+# Build rootfs
+FROM scratch AS rootfs
 
-LABEL maintainer="Aleksandar Puharic <xzero@elite7hackers.net>"
+# Install s6 supervisor
+COPY --from=s6-overlay ["/", "/"]
+
+# Install utils
+COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
+COPY --from=attr      ["/usr/local/bin/attr", "/usr/local/bin/"]
+
+# Copy overlay
+COPY ["rootfs", "/"]
+
+
+# Final stage
+ARG ALPINE_VERSION=3.15
+FROM alpine:${ALPINE_VERSION}
+
+LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>"
 
 # S6 Supervisor config
 ENV S6_KEEP_ENV=1
@@ -22,29 +32,17 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV S6_KILL_FINISH_MAXTIME=15000
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=8000
 
-# Backup configuration
-ENV BACKUP_BATCH_SIZE=1000000
-ENV BACKUP_TABLE_THRESHOLD=5000000
-ENV BACKUP_RETENTION_DAYS=5
-ENV BACKUP_RETENTION_WEEKS=2
-ENV BACKUP_RETENTION_MONTHS=1
-ENV BACKUP_CRON_VERBOSE=false
-
-WORKDIR /root
-
-ENV CRON_ENABLED=true
+WORKDIR "/root"
 
 RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
-    && wget -O /usr/local/bin/attr https://gist.githubusercontent.com/xZero707/7a3fb3e12e7192c96dbc60d45b3dc91d/raw/44a755181d2677a7dd1c353af0efcc7150f15240/attr.sh \
-    && chmod a+x /usr/local/bin/attr \
     && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
-# Install utils
-COPY --from=hairyhenderson/gomplate:v3.9.0-alpine /bin/gomplate  /usr/bin/gomplate
-COPY --from=mars-builder /tmp/mars/bin/mysql-backup-golang /usr/bin/mars
 
-ADD rootfs /
+COPY --from=rootfs    ["/", "/"]
 
-VOLUME ["/var/lib/mysql", "/var/lib/backup"]
+VOLUME ["/var/lib/mysql"]
+
+ENTRYPOINT ["/init"]
+
 EXPOSE 3306

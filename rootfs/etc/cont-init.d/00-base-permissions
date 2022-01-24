@@ -5,6 +5,9 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
   attr /var/lib/mysql/ true mysql:mysql 0770 2771
 fi
 
-attr /etc/mysql/*.cnf true root:root 0444
-attr /var/log/mysql/ true mysql:mysql 0770 2771
+if [ ! -d "/var/log/mysql" ]; then
+  mkdir -p /var/log/mysql
+  attr /var/log/mysql/ true mysql:mysql 0770 2771
+fi
 
+attr /etc/mysql/*.cnf true root:root 0444

@@ -51,57 +51,74 @@ function initDatabases() {
   done
 }
 
-echo "> [MariaDB Bootstrap v2.0]"
+function legacyCheckBackup() {
+  # We don't want user to sit with peace of mind thinking data is safe, while backup system is no longer present
+  if [ -d /usr/lib/backup ] && [ "$(ls -A /usr/lib/backup)" ] && [ -n "${I_UNDERSTAND_NO_MORE_BACKUPS}" ]; then
+    echo "> Warning: It seems that you have been using built-in backup system before."
+    echo "> As of 2022-01-24 this feature has been removed and will be maintained in separate repository. Backup system should be separate container/service."
+    echo "> This means that your database will no longer be backed up. "
+    echo "> For your own safety, to disable this check, please set environment variable I_UNDERSTAND_NO_MORE_BACKUPS to 1 or remove /var/lib/backup volume"
+    exit 1
+  fi
+}
 
-echo "> Checking if MariaDB initialized..."
-if [ -d "/var/lib/mysql/mysql" ]; then
-  echo "> [OK] MariaDB already initialized."
-  exit 0
-fi
+function main() {
+  echo "> [MariaDB Bootstrap v2.0]"
 
-echo "> MariaDB is not initialized. Proceeding with init"
+  echo "> Checking if MariaDB initialized..."
+  if [ -d "/var/lib/mysql/mysql" ]; then
+    echo "> [OK] MariaDB already initialized."
+    exit 0
+  fi
 
-if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
-  echo "Error: MARIADB_ROOT_PASSWORD not defined. Cannot initialize"
-  s6-svscanctl -t /var/run/s6/services
-  exit 1
-fi
+  legacyCheckBackup
 
-echo "> Running 'mysql_install_db'"
+  echo "> MariaDB is not initialized. Proceeding with init"
 
-if ! mysql_install_db --user=mysql --datadir="/var/lib/mysql"; then
-  echo "Error: 'mysql_install_db' exited with non-zero code"
-  exit 1
-fi
-
-echo "> Create MySQL user root@%"
-addToMySqlInit "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
-addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
-addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'localhost' IDENTIFIED VIA unix_socket WITH GRANT OPTION;"
-
-echo "> Create MySQL user backup@localhost (for backup daemon)"
-addToMySqlInit "CREATE USER 'backup'@'127.0.0.1' IDENTIFIED BY 'backup';"
-addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'127.0.0.1';"
-addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'127.0.0.1';"
-
-# Create non-administrative user if defined
-if [ -n "${MARIADB_USERNAME}" ]; then
-  if [ -z "${MARIADB_PASSWORD}" ]; then
-    echo "> Error: Refusing to create user without password"
+  if [ -z "${MARIADB_ROOT_PASSWORD}" ]; then
+    echo "Error: MARIADB_ROOT_PASSWORD not defined. Cannot initialize"
+    s6-svscanctl -t /var/run/s6/services
     exit 1
   fi
 
-  echo "> Create MySQL user ${MARIADB_USERNAME}@%"
-  addToMySqlInit "CREATE USER '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
-  echo "> Create database '${MARIADB_USERNAME}'"
-  initDatabases "${MARIADB_USERNAME},${MARIADB_DATABASE}" "${MARIADB_USERNAME}" "${MARIADB_PASSWORD}"
-else
-  echo "> Create databases for default user 'root'"
-  initDatabases "${MARIADB_DATABASE}"
-fi
+  echo "> Running 'mysql_install_db'"
 
-echo "> Remove database 'test'"
-addToMySqlInit "DROP DATABASE IF EXISTS test;"
-addToMySqlInit "FLUSH PRIVILEGES;"
+  if ! mysql_install_db --user=mysql --datadir="/var/lib/mysql"; then
+    echo "Error: 'mysql_install_db' exited with non-zero code"
+    exit 1
+  fi
 
-writeMySqlInit "${INIT_FILE}" "${INIT_SQL}"
+  echo "> Create MySQL user root@%"
+  addToMySqlInit "CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';"
+  addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' WITH GRANT OPTION;"
+  addToMySqlInit "GRANT ALL PRIVILEGES ON \`%\`.* TO 'root'@'localhost' IDENTIFIED VIA unix_socket WITH GRANT OPTION;"
+
+  echo "> Create MySQL user backup@localhost (for backup daemon)"
+  addToMySqlInit "CREATE USER 'backup'@'127.0.0.1' IDENTIFIED BY 'backup';"
+  addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'127.0.0.1';"
+  addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'127.0.0.1';"
+
+  # Create non-administrative user if defined
+  if [ -n "${MARIADB_USERNAME}" ]; then
+    if [ -z "${MARIADB_PASSWORD}" ]; then
+      echo "> Error: Refusing to create user without password"
+      exit 1
+    fi
+
+    echo "> Create MySQL user ${MARIADB_USERNAME}@%"
+    addToMySqlInit "CREATE USER '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
+    echo "> Create database '${MARIADB_USERNAME}'"
+    initDatabases "${MARIADB_USERNAME},${MARIADB_DATABASE}" "${MARIADB_USERNAME}" "${MARIADB_PASSWORD}"
+  else
+    echo "> Create databases for default user 'root'"
+    initDatabases "${MARIADB_DATABASE}"
+  fi
+
+  echo "> Remove database 'test'"
+  addToMySqlInit "DROP DATABASE IF EXISTS test;"
+  addToMySqlInit "FLUSH PRIVILEGES;"
+
+  writeMySqlInit "${INIT_FILE}" "${INIT_SQL}"
+}
+
+main
