@@ -18,8 +18,13 @@ COPY ["rootfs", "/"]
 
 
 # Final stage
-ARG ALPINE_VERSION=3.15
-FROM alpine:${ALPINE_VERSION}
+FROM alpine:3.15
+
+RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
+    && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
+    && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
+
+COPY --from=rootfs ["/", "/"]
 
 LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>"
 
@@ -33,16 +38,9 @@ ENV S6_KILL_FINISH_MAXTIME=15000
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=8000
 
 WORKDIR "/root"
-
-RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
-    && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
-    && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
-
-
-COPY --from=rootfs    ["/", "/"]
-
 VOLUME ["/var/lib/mysql"]
-
 ENTRYPOINT ["/init"]
 
-EXPOSE 3306
+# Expose primary port, and also administrative port
+EXPOSE 3306/TCP
+EXPOSE 8385/TCP
