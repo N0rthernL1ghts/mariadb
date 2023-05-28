@@ -18,7 +18,7 @@ COPY ["rootfs", "/"]
 
 
 # Final stage
-FROM alpine:3.15
+FROM alpine:3.18
 
 RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
     && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
