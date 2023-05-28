@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-docker build --tag "nlss/mariadb:latest" .
-docker push --all-tags nlss/mariadb
