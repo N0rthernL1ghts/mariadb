@@ -51,3 +51,9 @@ ENTRYPOINT ["/init"]
 # Expose primary port, and also administrative port
 EXPOSE 3306/TCP
 EXPOSE 8385/TCP
+
+LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>" \
+      org.opencontainers.image.source="https://github.com/N0rthernL1ghts/mariadb" \
+      org.opencontainers.image.description="MariaDB ${MARIADB_VERSION} - Alpine Build ${TARGETPLATFORM}" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${MARIADB_VERSION}"
