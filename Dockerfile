@@ -1,6 +1,6 @@
 FROM nlss/attr AS attr
 FROM nlss/s6-rootfs:2.2 AS s6-overlay
-FROM hairyhenderson/gomplate:v3.9.0-alpine AS gomplate
+FROM hairyhenderson/gomplate:v3.11.5-alpine AS gomplate
 
 
 # Build rootfs
