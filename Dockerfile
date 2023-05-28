@@ -18,7 +18,7 @@ COPY ["rootfs", "/"]
 
 
 # Final stage
-FROM alpine:3.18
+FROM --platform=${TARGETPLATFORM} alpine:3.18
 
 ARG MARIADB_VERSION="10.11.3-r0"
 ENV MARIADB_VERSION=${MARIADB_VERSION}
