@@ -20,8 +20,15 @@ COPY ["rootfs", "/"]
 # Final stage
 FROM alpine:3.18
 
+ARG MARIADB_VERSION="10.11.3-r0"
+ENV MARIADB_VERSION=${MARIADB_VERSION}
+
 RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
-    && apk add --update --upgrade --no-cache bash mariadb mariadb-client mariadb-server-utils tzdata \
+    && apk add --update --upgrade --no-cache bash tzdata \
+    && apk add --no-cache \
+        "mariadb=${MARIADB_VERSION}" \
+        "mariadb-client=${MARIADB_VERSION}" \
+        "mariadb-server-utils=${MARIADB_VERSION}" \
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
 
 COPY --from=rootfs ["/", "/"]
