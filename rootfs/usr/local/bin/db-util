@@ -9,14 +9,14 @@ user_exists() {
     USERNAME="${1:?USERNAME is required}"
     HOST="${2:-%}"
 
-    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${USERNAME}' AND host = '${HOST}');" | grep -q '1'
+    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${USERNAME}' AND host = '${HOST}');" | grep -q '^1' || return 1
     return $?
 }
 
 db_exists() {
     DATABASE_NAME="${1:?DATABASE_NAME is required}"
 
-    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.db WHERE db = '${DATABASE_NAME}');" | grep -q '1'
+    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.db WHERE db = '${DATABASE_NAME}');" | grep -q '^1' || return 1
     return $?
 }
 
