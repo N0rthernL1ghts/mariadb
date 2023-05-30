@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+generate_password() {
+    openssl rand -base64 32 | tr -d "=+/" | cut -c1-16
+}
+
+task_create_user() {
+    USER="${1:?USER required}"
+    PASSWORD="${2:-}"
+    IS_RANDOM_PASSWORD=0
+
+    echo "> Create user '${USER}'"
+
+    if db-util user-exists "${USER}"; then
+        echo "> User '${USER}' already exists"
+        return 1
+    fi
+
+    if [ -z "${PASSWORD}" ]; then
+        PASSWORD=$(generate_password)
+        IS_RANDOM_PASSWORD=1
+    fi
+
+    if db-util create-user "${USER}" "${PASSWORD}"; then
+        echo "> User '${USER}' created with password '${PASSWORD}'"
+
+        if [ "${IS_RANDOM_PASSWORD}" -eq 1 ]; then
+            echo "${PASSWORD}" >"/var/lib/mysql/.${USER}.password"
+            echo "  Random password generated"
+            echo "  Password saved in /var/lib/mysql/.${USER}.password"
+            echo "  It is recommended to remove this file after retrieving the password"
+        fi
+
+        return 0
+    fi
+
+    echo "> Error: Failed to create user '${USER}'"
+    return 1
+}
+
+task_create_database() {
+    DATABASE="${1:?DATABASE required}"
+
+    echo "> Create database '${DATABASE}'"
+
+    if db-util db-exists "${DATABASE}"; then
+        echo "> Database '${DATABASE}' already exists"
+        return 0
+    fi
+
+    if db-util create-db "${DATABASE}"; then
+        echo "> Database '${DATABASE}' created"
+        return 0
+    fi
+
+    echo "> Error: Failed to create database '${DATABASE}'"
+    return 1
+}
+
+task_create_batch_users() {
+    USERS=$(echo "${1:?USERS required}" | tr "|" "\n")
+
+    for USER in ${USERS}; do
+        # Extract the username and password using IFS
+        IFS=':' read -r USERNAME PASSWORD <<<"${USER}"
+        task_create_user "${USERNAME}" "${PASSWORD:-}"
+        sleep 0.1
+    done
+}
+
+task_create_batch_databases() {
+    DATABASES=$(echo "${1:?DATABASES required}" | tr "," "\n")
+
+    for DATABASE in ${DATABASES}; do
+        IFS=':' read -r DATABASE_NAME ASSIGNED_USER <<<"${DATABASE}"
+
+        echo "EXTRACTED: '${DATABASE_NAME}' '${ASSIGNED_USER}'"
+
+        if task_create_database "${DATABASE_NAME}"; then
+            if [ -n "${ASSIGNED_USER}" ]; then
+                echo "> Assigning user '${ASSIGNED_USER}' to database '${DATABASE_NAME}'"
+                db-util grant-privileges-on-db "${ASSIGNED_USER}" "${DATABASE_NAME}"
+            elif [ -n "${MARIADB_USERNAME}" ]; then
+                # This is for backwards compatibility
+                echo "> Assigning user '${MARIADB_USERNAME}' to database '${DATABASE_NAME}'"
+                db-util grant-privileges-on-db "${MARIADB_USERNAME}" "${DATABASE_NAME}"
+            fi
+        fi
+        sleep 0.1
+    done
+}
+
+main() {
+    echo "> [MariaDB Runtime Bootstrap v2.0]"
+
+    # Pool check for mysql socket file until ready
+    while [ ! -S /run/mysqld/mysqld.sock ]; do
+        echo "> Waiting for MariaDB to become ready..."
+        sleep 1
+    done
+
+    echo "> MariaDB socket file found. Proceeding with init"
+
+    # This is for backwards compatibility
+    if [ -n "${MARIADB_USERNAME}" ]; then
+        echo "> Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead"
+
+        USERNAME_ENTRY="${MARIADB_USERNAME}:${MARIADB_PASSWORD}"
+        if [ -n "${MARIADB_INIT_USERS}" ]; then
+            MARIADB_INIT_USERS="${MARIADB_INIT_USERS}|${USERNAME_ENTRY}"
+        else
+            MARIADB_INIT_USERS="${USERNAME_ENTRY}"
+        fi
+    fi
+
+    if [ -n "${MARIADB_DATABASE}" ]; then
+        echo "> Warning: MARIADB_DATABASE is deprecated. Please use MARIADB_INIT_DATABASES instead"
+
+        if [ -n "${MARIADB_INIT_DATABASES}" ]; then
+            MARIADB_INIT_DATABASES="${MARIADB_INIT_DATABASES},${MARIADB_DATABASE}"
+        else
+            MARIADB_INIT_DATABASES="${MARIADB_DATABASE}"
+        fi
+    fi
+
+    sleep 1
+    # Initialize users and databases
+    task_create_batch_users "${MARIADB_INIT_USERS}"
+    task_create_batch_databases "${MARIADB_INIT_DATABASES}"
+
+    echo "> Bootstrap complete."
+
+    sleep infinity
+}
+
+main

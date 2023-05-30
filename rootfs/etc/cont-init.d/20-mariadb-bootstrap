@@ -27,30 +27,6 @@ function writeMySqlInit() {
   fi
 }
 
-function initDatabases() {
-  echo "> Init defined databases"
-
-  if [ -z "${1:-}" ]; then
-    echo "> Warning: No databases defined"
-    return
-  fi
-
-  DATABASES=$(echo "${1:-}" | tr "," "\n")
-  DB_USER="${2:-}"
-  DB_PASSWORD="${3:-}"
-  DB_HOST="${4:-%}"
-
-  for DATABASE in ${DATABASES}; do
-    echo "> Create database '${DATABASE}'"
-    addToMySqlInit "CREATE DATABASE IF NOT EXISTS \`${DATABASE}\`;"
-
-    if [ -n "${DB_USER}" ]; then
-      addToMySqlInit "GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO '${DB_USER}'@'${DB_HOST}' IDENTIFIED BY '${DB_PASSWORD}';"
-    fi
-
-  done
-}
-
 function legacyCheckBackup() {
   # We don't want user to sit with peace of mind thinking data is safe, while backup system is no longer present
   if [ -d /usr/lib/backup ] && [ "$(ls -A /usr/lib/backup)" ] && [ -n "${I_UNDERSTAND_NO_MORE_BACKUPS}" ]; then
@@ -63,7 +39,7 @@ function legacyCheckBackup() {
 }
 
 function main() {
-  echo "> [MariaDB Bootstrap v2.0]"
+  echo "> [MariaDB Init]"
 
   echo "> Checking if MariaDB initialized..."
   if [ -d "/var/lib/mysql/mysql" ]; then
@@ -97,22 +73,6 @@ function main() {
   addToMySqlInit "CREATE USER 'backup'@'127.0.0.1' IDENTIFIED BY 'backup';"
   addToMySqlInit "GRANT SELECT, SHOW VIEW, EVENT, TRIGGER ON \`%\`.* TO 'backup'@'127.0.0.1';"
   addToMySqlInit "GRANT LOCK TABLES ON \`%\`.* TO 'backup'@'127.0.0.1';"
-
-  # Create non-administrative user if defined
-  if [ -n "${MARIADB_USERNAME}" ]; then
-    if [ -z "${MARIADB_PASSWORD}" ]; then
-      echo "> Error: Refusing to create user without password"
-      exit 1
-    fi
-
-    echo "> Create MySQL user ${MARIADB_USERNAME}@%"
-    addToMySqlInit "CREATE USER '${MARIADB_USERNAME}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
-    echo "> Create database '${MARIADB_USERNAME}'"
-    initDatabases "${MARIADB_USERNAME},${MARIADB_DATABASE}" "${MARIADB_USERNAME}" "${MARIADB_PASSWORD}"
-  else
-    echo "> Create databases for default user 'root'"
-    initDatabases "${MARIADB_DATABASE}"
-  fi
 
   echo "> Remove database 'test'"
   addToMySqlInit "DROP DATABASE IF EXISTS test;"

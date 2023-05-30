@@ -24,7 +24,7 @@ ARG MARIADB_VERSION="10.11.3-r0"
 ENV MARIADB_VERSION=${MARIADB_VERSION}
 
 RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home "/var/lib/mysql" "mysql" \
-    && apk add --update --upgrade --no-cache bash tzdata \
+    && apk add --update --upgrade --no-cache bash openssl tzdata \
     && apk add --no-cache \
         "mariadb=${MARIADB_VERSION}" \
         "mariadb-client=${MARIADB_VERSION}" \
