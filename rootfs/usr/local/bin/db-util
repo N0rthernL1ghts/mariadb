@@ -106,7 +106,7 @@ main() {
         drop_db "${@:2}"
         return $?
         ;;
-    greant-privileges-on-db)
+    grant-privileges-on-db)
         grant_privileges_on_db "${@:2}"
         return $?
         ;;
