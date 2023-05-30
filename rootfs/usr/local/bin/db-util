@@ -16,7 +16,7 @@ user_exists() {
 db_exists() {
     DATABASE_NAME="${1:?DATABASE_NAME is required}"
 
-    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.db WHERE db = '${DATABASE_NAME}');" | grep -q '^1' || return 1
+    exec_command "SHOW DATABASES LIKE '${DATABASE_NAME}';" | grep -q "^${DATABASE_NAME}$" || return 1
     return $?
 }
 
