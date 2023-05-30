@@ -125,8 +125,15 @@ main() {
 
     sleep 1
     # Initialize users and databases
-    task_create_batch_users "${MARIADB_INIT_USERS}"
-    task_create_batch_databases "${MARIADB_INIT_DATABASES}"
+    if [ -n "${MARIADB_INIT_USERS}" ]; then
+        echo "> Initializing users..."
+        task_create_batch_users "${MARIADB_INIT_USERS}"
+    fi
+
+    if [ -n "${MARIADB_INIT_DATABASES}" ]; then
+        echo "> Initializing databases..."
+        task_create_batch_databases "${MARIADB_INIT_DATABASES}"
+    fi
 
     echo "> Bootstrap complete."
 
