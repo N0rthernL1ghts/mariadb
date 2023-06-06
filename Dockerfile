@@ -1,3 +1,5 @@
+ARG BASE_ALPINE_VERSION="3.18"
+
 FROM nlss/attr AS attr
 FROM nlss/s6-rootfs:2.2 AS s6-overlay
 FROM hairyhenderson/gomplate:v3.11.5-alpine AS gomplate
@@ -18,7 +20,8 @@ COPY ["rootfs", "/"]
 
 
 # Final stage
-FROM --platform=${TARGETPLATFORM} alpine:3.18
+ARG BASE_ALPINE_VERSION
+FROM --platform=${TARGETPLATFORM} alpine:${BASE_ALPINE_VERSION}
 
 ARG MARIADB_VERSION="10.11.3-r0"
 ENV MARIADB_VERSION=${MARIADB_VERSION}

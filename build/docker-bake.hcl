@@ -1,5 +1,6 @@
 group "default" {
   targets = [
+    "10_6_13_r0",
     "10_11_3_r0"
   ]
 }
@@ -30,9 +31,10 @@ variable "REGISTRY_CACHE" {
 
 # Get the arguments for the build
 function "get-args" {
-  params = [version]
+  params = [mariadb_version, base_alpine_version]
   result = {
-    MARIADB_VERSION = version
+    MARIADB_VERSION = mariadb_version
+    BASE_ALPINE_VERSION = base_alpine_version
   }
 }
 
@@ -75,10 +77,18 @@ function "get-tags" {
 # Define the build targets
 ##########################
 
+target "10_6_13_r0" {
+  inherits   = ["build-dockerfile", "build-platforms", "build-common"]
+  cache-from = get-cache-from("10.6.13")
+  cache-to   = get-cache-to("10.6.13")
+  tags       = get-tags("10.6.13", ["10.6.13-r0", "10.6", "latest"])
+  args       = get-args("10.6.13-r0", "3.15")
+}
+
 target "10_11_3_r0" {
   inherits   = ["build-dockerfile", "build-platforms", "build-common"]
   cache-from = get-cache-from("10.11.3")
   cache-to   = get-cache-to("10.11.3")
   tags       = get-tags("10.11.3", ["10.11.3-r0", "10.11", "latest"])
-  args       = get-args("10.11.3-r0")
+  args       = get-args("10.11.3-r0", "3.18")
 }
