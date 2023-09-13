@@ -2,9 +2,7 @@ version: "3.7"
 
 services:
   database:
-    image: 'local/mariadb'
-    build:
-      context: .
+    image: ghcr.io/n0rthernl1ghts/mariadb:latest
     environment:
       MARIADB_USERNAME: 'webapp'
       MARIADB_PASSWORD: 'example_password'
