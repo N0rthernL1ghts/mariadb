@@ -53,7 +53,6 @@ grant_privileges_on_database() {
     local host="${3:-%}"
 
     execute_mysql_command "GRANT ALL PRIVILEGES ON ${database_name}.* TO '${username}'@'${host}';" || return
-    execute_mysql_command 'FLUSH PRIVILEGES;'
 }
 
 is_mysql_running() {
@@ -75,6 +74,7 @@ main() {
     db-create) create_database "${@:2}" ;;
     db-drop) drop_database "${@:2}" ;;
     db-grant-privileges) grant_privileges_on_database "${@:2}" ;;
+    flush-privileges | flush-privs) execute_mysql_command 'FLUSH PRIVILEGES;' ;;
     healthcheck) is_mysql_running ;;
     *)
         echo "Unknown command: ${command}"
