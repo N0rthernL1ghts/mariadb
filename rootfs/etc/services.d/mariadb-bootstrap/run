@@ -142,6 +142,8 @@ main() {
         create_batch_databases "${MARIADB_INIT_DATABASES}"
     fi
 
+    db-util flush-privileges
+
     echo "> Bootstrap complete."
 
     sleep infinity
