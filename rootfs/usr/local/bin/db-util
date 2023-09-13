@@ -52,7 +52,8 @@ grant_privileges_on_database() {
     local database_name="${2:?Database name is required}"
     local host="${3:-%}"
 
-    execute_mysql_command "GRANT ALL PRIVILEGES ON ${database_name}.* TO '${username}'@'${host}';"
+    execute_mysql_command "GRANT ALL PRIVILEGES ON ${database_name}.* TO '${username}'@'${host}';" || return
+    execute_mysql_command 'FLUSH PRIVILEGES;'
 }
 
 is_mysql_running() {
