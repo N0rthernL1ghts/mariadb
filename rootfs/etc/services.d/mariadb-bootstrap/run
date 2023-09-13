@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#set -eo pipefail
+
 # Generate a random password
 generate_password() {
     openssl rand -base64 32 | tr -d "=+/" | cut -c1-16
@@ -98,13 +100,14 @@ create_batch_databases() {
 # Main function
 main() {
     echo "> [MariaDB Runtime Bootstrap v2.1]"
-
-    while [ ! -S /run/mysqld/mysqld.sock ]; do
+ 
+    until db-util healthcheck >/dev/null 2>&1;
+    do
         echo "> Waiting for MariaDB to become ready..."
         sleep 1
     done
 
-    echo "> MariaDB socket file found. Proceeding with initialization"
+    echo "> MariaDB ready. Proceeding with initialization"
 
     if [ -n "${MARIADB_USERNAME}" ]; then
         echo "> Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead"
