@@ -23,7 +23,7 @@ create_user() {
         is_random_password=1
     fi
 
-    if db-util create-user "${user}" "${password}"; then
+    if db-util user-create "${user}" "${password}"; then
         echo "> User '${user}' created with password '${password}'"
 
         if [ "${is_random_password}" -eq 1 ]; then
@@ -51,7 +51,7 @@ create_database() {
         return 0
     fi
 
-    if db-util create-db "${database}"; then
+    if db-util db-create "${database}"; then
         echo "> Database '${database}' created"
         return 0
     fi
@@ -85,10 +85,10 @@ create_batch_databases() {
         if create_database "${database_name}"; then
             if [ -n "${assigned_user}" ]; then
                 echo "> Assigning user '${assigned_user}' to database '${database_name}'"
-                db-util grant-privileges-on-db "${assigned_user}" "${database_name}"
+                db-util db-grant-privileges "${assigned_user}" "${database_name}"
             elif [ -n "${MARIADB_USERNAME}" ]; then
                 echo "> Assigning user '${MARIADB_USERNAME}' to database '${database_name}'"
-                db-util grant-privileges-on-db "${MARIADB_USERNAME}" "${database_name}"
+                db-util db-grant-privileges "${MARIADB_USERNAME}" "${database_name}"
             fi
         fi
         sleep 0.1

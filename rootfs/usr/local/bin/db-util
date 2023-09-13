@@ -69,11 +69,11 @@ main() {
 
     case "${command}" in
     user-exists) does_user_exist "${@:2}" ;;
+    user-create) create_user "${@:2}" ;;
     db-exists) does_database_exist "${@:2}" ;;
-    create-user) create_user "${@:2}" ;;
-    create-db) create_database "${@:2}" ;;
-    drop-db) drop_database "${@:2}" ;;
-    grant-privileges-on-db) grant_privileges_on_database "${@:2}" ;;
+    db-create) create_database "${@:2}" ;;
+    db-drop) drop_database "${@:2}" ;;
+    db-grant-privileges) grant_privileges_on_database "${@:2}" ;;
     healthcheck) is_mysql_running ;;
     *)
         echo "Unknown command: ${command}"
