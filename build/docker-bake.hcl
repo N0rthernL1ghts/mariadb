@@ -90,5 +90,5 @@ target "10_11_3_r0" {
   cache-from = get-cache-from("10.11.3")
   cache-to   = get-cache-to("10.11.3")
   tags       = get-tags("10.11.3", ["10.11.3-r0", "10.11", "latest"])
-  args       = get-args("10.11.3-r0", "3.18")
+  args       = get-args("10.11.3-r0", "3.18.0")
 }
