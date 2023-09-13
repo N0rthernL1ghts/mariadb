@@ -1,115 +1,119 @@
 #!/usr/bin/env bash
 
+# Generate a random password
 generate_password() {
     openssl rand -base64 32 | tr -d "=+/" | cut -c1-16
 }
 
-task_create_user() {
-    USER="${1:?USER required}"
-    PASSWORD="${2:-}"
-    IS_RANDOM_PASSWORD=0
+# Create a user function
+create_user() {
+    local user="${1:?User required}"
+    local password="${2:-}"
+    local is_random_password=0
 
-    echo "> Create user '${USER}'"
+    echo "> Creating user '${user}'"
 
-    if db-util user-exists "${USER}"; then
-        echo "> User '${USER}' already exists"
+    if db-util user-exists "${user}"; then
+        echo "> User '${user}' already exists"
         return 1
     fi
 
-    if [ -z "${PASSWORD}" ]; then
-        PASSWORD=$(generate_password)
-        IS_RANDOM_PASSWORD=1
+    if [ -z "${password}" ]; then
+        password=$(generate_password)
+        is_random_password=1
     fi
 
-    if db-util create-user "${USER}" "${PASSWORD}"; then
-        echo "> User '${USER}' created with password '${PASSWORD}'"
+    if db-util create-user "${user}" "${password}"; then
+        echo "> User '${user}' created with password '${password}'"
 
-        if [ "${IS_RANDOM_PASSWORD}" -eq 1 ]; then
-            echo "${PASSWORD}" >"/var/lib/mysql/.${USER}.password"
+        if [ "${is_random_password}" -eq 1 ]; then
+            echo "${password}" >"/var/lib/mysql/.${user}.password"
             echo "  Random password generated"
-            echo "  Password saved in /var/lib/mysql/.${USER}.password"
+            echo "  Password saved in /var/lib/mysql/.${user}.password"
             echo "  It is recommended to remove this file after retrieving the password"
         fi
 
         return 0
     fi
 
-    echo "> Error: Failed to create user '${USER}'"
+    echo "> Error: Failed to create user '${user}'"
     return 1
 }
 
-task_create_database() {
-    DATABASE="${1:?DATABASE required}"
+# Create a database function
+create_database() {
+    local database="${1:?Database required}"
 
-    echo "> Create database '${DATABASE}'"
+    echo "> Creating database '${database}'"
 
-    if db-util db-exists "${DATABASE}"; then
-        echo "> Database '${DATABASE}' already exists"
+    if db-util db-exists "${database}"; then
+        echo "> Database '${database}' already exists"
         return 0
     fi
 
-    if db-util create-db "${DATABASE}"; then
-        echo "> Database '${DATABASE}' created"
+    if db-util create-db "${database}"; then
+        echo "> Database '${database}' created"
         return 0
     fi
 
-    echo "> Error: Failed to create database '${DATABASE}'"
+    echo "> Error: Failed to create database '${database}'"
     return 1
 }
 
-task_create_batch_users() {
-    USERS=$(echo "${1:?USERS required}" | tr "|" "\n")
+# Function to create batch users
+create_batch_users() {
+    local users
 
-    for USER in ${USERS}; do
-        # Extract the username and password using IFS
-        IFS=':' read -r USERNAME PASSWORD <<<"${USER}"
-        task_create_user "${USERNAME}" "${PASSWORD:-}"
+    users=$(echo "${1:?Users required}" | tr "|" "\n")
+
+    for user in ${users}; do
+        IFS=':' read -r username password <<<"${user}"
+        create_user "${username}" "${password:-}"
         sleep 0.1
     done
 }
 
-task_create_batch_databases() {
-    DATABASES=$(echo "${1:?DATABASES required}" | tr "," "\n")
+# Function to create batch databases
+create_batch_databases() {
+    local databases
 
-    for DATABASE in ${DATABASES}; do
-        IFS=':' read -r DATABASE_NAME ASSIGNED_USER <<<"${DATABASE}"
+    databases=$(echo "${1:?Databases required}" | tr "," "\n")
 
-        echo "EXTRACTED: '${DATABASE_NAME}' '${ASSIGNED_USER}'"
+    for database in ${databases}; do
+        IFS=':' read -r database_name assigned_user <<<"${database}"
 
-        if task_create_database "${DATABASE_NAME}"; then
-            if [ -n "${ASSIGNED_USER}" ]; then
-                echo "> Assigning user '${ASSIGNED_USER}' to database '${DATABASE_NAME}'"
-                db-util grant-privileges-on-db "${ASSIGNED_USER}" "${DATABASE_NAME}"
+        if create_database "${database_name}"; then
+            if [ -n "${assigned_user}" ]; then
+                echo "> Assigning user '${assigned_user}' to database '${database_name}'"
+                db-util grant-privileges-on-db "${assigned_user}" "${database_name}"
             elif [ -n "${MARIADB_USERNAME}" ]; then
-                # This is for backwards compatibility
-                echo "> Assigning user '${MARIADB_USERNAME}' to database '${DATABASE_NAME}'"
-                db-util grant-privileges-on-db "${MARIADB_USERNAME}" "${DATABASE_NAME}"
+                echo "> Assigning user '${MARIADB_USERNAME}' to database '${database_name}'"
+                db-util grant-privileges-on-db "${MARIADB_USERNAME}" "${database_name}"
             fi
         fi
         sleep 0.1
     done
 }
 
+# Main function
 main() {
-    echo "> [MariaDB Runtime Bootstrap v2.0]"
+    echo "> [MariaDB Runtime Bootstrap v2.1]"
 
-    # Pool check for mysql socket file until ready
     while [ ! -S /run/mysqld/mysqld.sock ]; do
         echo "> Waiting for MariaDB to become ready..."
         sleep 1
     done
 
-    echo "> MariaDB socket file found. Proceeding with init"
+    echo "> MariaDB socket file found. Proceeding with initialization"
 
-    # This is for backwards compatibility
     if [ -n "${MARIADB_USERNAME}" ]; then
         echo "> Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead"
 
-        USERNAME_ENTRY="${MARIADB_USERNAME}:${MARIADB_PASSWORD}"
+        local username_entry="${MARIADB_USERNAME}:${MARIADB_PASSWORD}"
         if [ -n "${MARIADB_INIT_USERS}" ]; then
-            MARIADB_INIT_USERS="${MARIADB_INIT_USERS}|${USERNAME_ENTRY}"
+            MARIADB_INIT_USERS="${MARIADB_INIT_USERS}|${username_entry}"
         else
-            MARIADB_INIT_USERS="${USERNAME_ENTRY}"
+            MARIADB_INIT_USERS="${username_entry}"
         fi
     fi
 
@@ -124,15 +128,15 @@ main() {
     fi
 
     sleep 1
-    # Initialize users and databases
+
     if [ -n "${MARIADB_INIT_USERS}" ]; then
         echo "> Initializing users..."
-        task_create_batch_users "${MARIADB_INIT_USERS}"
+        create_batch_users "${MARIADB_INIT_USERS}"
     fi
 
     if [ -n "${MARIADB_INIT_DATABASES}" ]; then
         echo "> Initializing databases..."
-        task_create_batch_databases "${MARIADB_INIT_DATABASES}"
+        create_batch_databases "${MARIADB_INIT_DATABASES}"
     fi
 
     echo "> Bootstrap complete."
@@ -140,4 +144,5 @@ main() {
     sleep infinity
 }
 
-main
+main "$@"
+return $?
