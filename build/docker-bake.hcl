@@ -1,8 +1,7 @@
 group "default" {
   targets = [
-    "10_6_14_r0",
-    "10_11_3_r0",
-    "10_11_5_r0"
+    "10_6",
+    "10_11"
   ]
 }
 
@@ -78,26 +77,18 @@ function "get-tags" {
 # Define the build targets
 ##########################
 
-target "10_6_14_r0" {
+target "10_6" {
   inherits   = ["build-dockerfile", "build-platforms", "build-common"]
   cache-from = get-cache-from("10.6.14")
   cache-to   = get-cache-to("10.6.14")
-  tags       = get-tags("10.6.14", ["10.6.14-r0", "10.6", "latest"])
+  tags       = get-tags("10.6", [])
   args       = get-args("10.6.14-r0", "3.15")
 }
 
-target "10_11_3_r0" {
-  inherits   = ["build-dockerfile", "build-platforms", "build-common"]
-  cache-from = get-cache-from("10.11.3")
-  cache-to   = get-cache-to("10.11.3")
-  tags       = get-tags("10.11.3", ["10.11.3-r0"])
-  args       = get-args("10.11.3-r0", "3.18.0")
-}
-
-target "10_11_5_r0" {
+target "10_11" {
   inherits   = ["build-dockerfile", "build-platforms", "build-common"]
   cache-from = get-cache-from("10.11.5")
   cache-to   = get-cache-to("10.11.5")
-  tags       = get-tags("10.11.5", ["10.11.5-r0", "10.11", "latest"])
+  tags       = get-tags("10.11", ["10", "latest"])
   args       = get-args("10.11.5-r0", "3.18.2")
 }
