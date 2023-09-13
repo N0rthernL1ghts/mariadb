@@ -1,127 +1,86 @@
 #!/usr/bin/env bash
 
-exec_command() {
+set -eo pipefail
+
+execute_mysql_command() {
     mysql -ve "${1:?}" "${@:2}"
-    return $?
 }
 
-user_exists() {
-    USERNAME="${1:?USERNAME is required}"
-    HOST="${2:-%}"
+does_user_exist() {
+    local username="${1:?Username is required}"
+    local host="${2:-%}"
 
-    exec_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${USERNAME}' AND host = '${HOST}');" | grep -q '^1' || return 1
-    return $?
+    execute_mysql_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${username}' AND host =}');" | grep -q '^1'
 }
 
-db_exists() {
-    DATABASE_NAME="${1:?DATABASE_NAME is required}"
+does_database_exist() {
+    local database_name="${1:?Database name is required}"
 
-    exec_command "SHOW DATABASES LIKE '${DATABASE_NAME}';" | grep -q "^${DATABASE_NAME}$" || return 1
-    return $?
+    execute_mysql_command "SHOW DATABASES LIKE '${database_name}';" | grep -q "^${database_name}$"
 }
 
-# Create a user
 create_user() {
-    USERNAME="${1:?USERNAME is required}"
-    PASSWORD="${2:?PASSWORD is required}"
-    HOST="${3:-%}"
+    local username="${1:?Username is required}"
+    local password="${2:?Password is required}"
+    local host="${3:-%}"
+    local create_user_db="${CREATE_USER_DB:-true}"
 
-    # Default behavior is to create a database with the same name as the user.
-    # This is controlled by the CREATE_USER_DB env var.
-    CREATE_USER_DB=${CREATE_USER_DB:-true}
+    execute_mysql_command "CREATE USER '${username}'@'${host}' IDENTIFIED BY '${password}';" || return
 
-    exec_command "CREATE USER '${USERNAME}'@'${HOST}' IDENTIFIED BY '${PASSWORD}';" || return $?
-
-    if [ "${CREATE_USER_DB}" = "true" ]; then
-        create_db "${USERNAME}" "${USERNAME}"
-        return $?
+    if [ "${create_user_db}" = "true" ]; then
+        create_database "${username}" "${username}"
     fi
-
-    return $?
 }
 
-create_db() {
-    DATABASE_NAME="${1:?DATABASE_NAME is required}"
-    exec_command "CREATE DATABASE ${DATABASE_NAME};"
+create_database() {
+    local database_name="${1:?Database name is required}"
+    execute_mysql_command "CREATE DATABASE ${database_name};"
 
-    GRANT_TO_USER="${2:-}"
-    if [ -n "${GRANT_TO_USER}" ]; then
-        grant_privileges_on_db "${GRANT_TO_USER}" "${DATABASE_NAME}"
-        return $?
+    local grant_to_user="${2:-}"
+    if [ -n "${grant_to_user}" ]; then
+        grant_privileges_on_database "${grant_to_user}" "${database_name}"
     fi
-
-    return $?
 }
 
-drop_db() {
-    DATABASE_NAME="${1:?DATABASE_NAME is required}"
-    exec_command "DROP DATABASE ${DATABASE_NAME};"
-    return $?
+drop_database() {
+    local database_name="${1:?Database name is required}"
+    execute_mysql_command "DROP DATABASE ${database_name};"
 }
 
-grant_privileges_on_db() {
-    USERNAME="${1:?USERNAME is required}"
-    DATABASE_NAME="${2:?DATABASE_NAME is required}"
-    HOST="${3:-%}"
+grant_privileges_on_database() {
+    local username="${1:?Username is required}"
+    local database_name="${2:?Database name is required}"
+    local host="${3:-%}"
 
-    exec_command "GRANT ALL PRIVILEGES ON ${DATABASE_NAME}.* TO '${USERNAME}'@'${HOST}';"
-    return $?
+    execute_mysql_command "GRANT ALL PRIVILEGES ON ${database_name}.* TO '${username}'@'${host}';"
 }
 
-healthcheck() {
-    if exec_command 'SELECT 1;'; then
-        return 0
-    fi
-
-    return 1
+is_mysql_running() {
+    execute_mysql_command 'SELECT 1;'
 }
 
 main() {
+    local command="${1:-_empty_}"
+
     if [ ! -S "/run/mysqld/mysqld.sock" ]; then
         echo "Error: MySQL is not running"
         return 1
     fi
 
-    COMMAND_NAMESPACE="${1:-_empty_}"
-
-    # Switch case for multiple commands: create user, create database, etc.
-    case "${COMMAND_NAMESPACE}" in
-    user-exists)
-        user_exists "${@:2}"
-        return $?
-        ;;
-    db-exists)
-        db_exists "${@:2}"
-        return $?
-        ;;
-    create-user)
-        create_user "${@:2}"
-        return $?
-        ;;
-    create-db)
-        create_db "${@:2}"
-        return $?
-        ;;
-    drop-db)
-        drop_db "${@:2}"
-        return $?
-        ;;
-    grant-privileges-on-db)
-        grant_privileges_on_db "${@:2}"
-        return $?
-        ;;
-    healthcheck)
-        healthcheck
-        return $?
-        ;;
+    case "${command}" in
+    user-exists) does_user_exist "${@:2}" ;;
+    db-exists) does_database_exist "${@:2}" ;;
+    create-user) create_user "${@:2}" ;;
+    create-db) create_database "${@:2}" ;;
+    drop-db) drop_database "${@:2}" ;;
+    grant-privileges-on-db) grant_privileges_on_database "${@:2}" ;;
+    healthcheck) is_mysql_running ;;
     *)
-        echo "> Unknown command: ${COMMAND_NAMESPACE}"
-        echo "  Usage: db-util <command> [args]"
+        echo "Unknown command: ${command}"
+        echo "Usage: db-util <command> [args]"
         return 1
         ;;
     esac
-
 }
 
 main "${@}"
-exit $?
