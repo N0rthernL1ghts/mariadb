@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-CHECK="$(echo 'SELECT 1;' | mysql 2>/dev/null | head -n1)"
-
-if [[ "${CHECK}" == "1" ]]
-then
-  exit 0
-fi
-
-exit 1
+/usr/local/bin/db-util healthcheck 2>/dev/null
