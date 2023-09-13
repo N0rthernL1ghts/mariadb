@@ -30,6 +30,7 @@ RUN adduser --shell /bin/false --disabled-password --gecos "MariaDB User" --home
     && apk add --update --upgrade --no-cache bash openssl tzdata \
     && apk add --no-cache \
         "mariadb=${MARIADB_VERSION}" \
+        "mariadb-backup==${MARIADB_VERSION}" \
         "mariadb-client=${MARIADB_VERSION}" \
         "mariadb-server-utils=${MARIADB_VERSION}" \
     && rm -rf /etc/mysql/* /etc/my.cnf* /var/lib/mysql/*
