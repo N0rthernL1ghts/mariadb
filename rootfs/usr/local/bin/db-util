@@ -10,7 +10,7 @@ does_user_exist() {
     local username="${1:?Username is required}"
     local host="${2:-%}"
 
-    execute_mysql_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${username}' AND host =}');" | grep -q '^1'
+    execute_mysql_command "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${username}' AND host = '${host}');" | grep -q '^1'
 }
 
 does_database_exist() {
