@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 
 #set -eo pipefail
 
@@ -145,9 +146,6 @@ main() {
     db-util flush-privileges
 
     echo "> Bootstrap complete."
-
-    sleep infinity
 }
 
 main "$@"
-return $?
