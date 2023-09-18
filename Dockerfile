@@ -1,7 +1,7 @@
 ARG BASE_ALPINE_VERSION="3.18"
 
 FROM nlss/attr AS attr
-FROM ghcr.io/n0rthernl1ghts/s6-rootfs:2.2 AS s6-overlay
+FROM ghcr.io/n0rthernl1ghts/s6-rootfs:3.1 AS s6-overlay
 FROM ghcr.io/hairyhenderson/gomplate:v3.11.5-alpine AS gomplate
 
 
