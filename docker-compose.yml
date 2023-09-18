@@ -9,8 +9,8 @@ services:
       MARIADB_DATABASE: 'app,cars,docs'
       MARIADB_ROOT_PASSWORD: 'example_password'
     volumes:
-      - data:/var/lib/mysql
-      - backup:/var/lib/backup
+      - data:/config
+      - data_legacy:/var/lib/mysql
       - log:/var/log/mysql
     networks:
       default: {aliases: [database]}
@@ -34,6 +34,6 @@ networks:
   database:
 
 volumes:
-  backup:
   data:
+  data_legacy:
   log:
