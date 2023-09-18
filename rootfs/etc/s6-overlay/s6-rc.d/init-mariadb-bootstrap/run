@@ -104,6 +104,8 @@ create_batch_databases() {
 
 # Main function
 main() {
+    exec > >(while read line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
+
     echo "> [MariaDB Runtime Bootstrap v2.1]"
 
     start_mariadb
