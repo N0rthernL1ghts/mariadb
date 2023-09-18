@@ -154,6 +154,9 @@ main() {
     mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
 
     echo "> Bootstrap complete."
+
+    # Make sure that all processes have exited
+    wait
 }
 
 main "$@"
