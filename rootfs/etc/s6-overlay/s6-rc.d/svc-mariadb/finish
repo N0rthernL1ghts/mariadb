@@ -1,9 +1,0 @@
-#!/usr/bin/with-contenv bash
-# shellcheck shell=bash
-
-echo "Caught SIGTERM signal!"
-
-echo "Attempting safe shutdown procedure..."
-/usr/bin/mysql-shutdown
-
-kill -TERM "$(cat /var/run/mysqld/mysqld.pid)" 2>/dev/null
