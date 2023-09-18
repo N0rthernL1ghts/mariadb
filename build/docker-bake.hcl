@@ -31,7 +31,7 @@ variable "REGISTRY_CACHE" {
 
 # Get the arguments for the build
 function "get-args" {
-  params = [mariadb_version, base_alpine_version]
+  params = [mariadb_version]
   result = {
     MARIADB_VERSION = mariadb_version
   }
