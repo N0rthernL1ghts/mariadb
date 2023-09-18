@@ -7,8 +7,9 @@ services:
       PUID: 1000
       PGID: 1000
       MARIADB_USERNAME: 'webapp'
+      MARIADB_INIT_USERS: 'app,docs-app'
+      MARIADB_INIT_DATABASES: 'app,cars,docs'
       MARIADB_PASSWORD: 'example_password'
-      MARIADB_DATABASE: 'app,cars,docs'
       MARIADB_ROOT_PASSWORD: 'example_password'
     volumes:
       - config:/config
