@@ -18,8 +18,12 @@ COPY --from=rootfs ["/", "/"]
 EXPOSE 3306/TCP
 EXPOSE 8385/TCP
 
+
+
 LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>" \
       org.opencontainers.image.source="https://github.com/N0rthernL1ghts/mariadb" \
       org.opencontainers.image.description="MariaDB ${MARIADB_VERSION} - Based on lscr.io/linuxserver/mariadb:${BASE_IMAGE_VERSION}" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version="${MARIADB_VERSION}"
+
+ENV DATADIR="/var/lib/mysql"
