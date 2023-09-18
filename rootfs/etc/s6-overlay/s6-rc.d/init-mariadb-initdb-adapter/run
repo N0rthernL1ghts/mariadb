@@ -24,17 +24,32 @@ main() {
     if [ -n "${MARIADB_USERNAME}" ]; then
         echo "Warning: Deprecated variable 'MARIADB_USERNAME' is ignored during initdb"
         echo "Please use 'MARIADB_INIT_USERS' instead"
+
+        if [ -n "${MARIADB_INIT_USERS}" ]; then
+            MARIADB_INIT_USERS="${MARIADB_INIT_USERS},${MARIADB_USERNAME}"
+        else
+            MARIADB_INIT_USERS="${MARIADB_USERNAME}"
+        fi
+
+        create-env-file "MARIADB_INIT_USERS" "${MARIADB_INIT_USERS}"
     fi
 
     if [ -n "${MARIADB_PASSWORD}" ]; then
-        echo "Warning: Deprecated variable 'MARIADB_PASSWORD' is ignored during initdb"
+        echo "Warning: Deprecated variable 'MARIADB_PASSWORD' is ignored"
         echo "Please use 'MARIADB_INIT_USERS' instead"
     fi
 
     if [ -n "${MARIADB_DATABASE}" ]; then
-        echo "Warning: Deprecated variable 'MARIADB_PASSWORD'"
+        echo "Warning: Deprecated variable 'MARIADB_DATABASE'"
         echo "Please use 'MARIADB_INIT_DATABASES' instead"
-        create-env-file "MYSQL_DATABASE" "${MARIADB_DATABASE}"
+
+        if [ -n "${MARIADB_INIT_DATABASES}" ]; then
+            MARIADB_INIT_DATABASES="${MARIADB_INIT_DATABASES},${MARIADB_DATABASE}"
+        else
+            MARIADB_INIT_DATABASES="${MARIADB_DATABASE}"
+        fi
+
+        create-env-file "MARIADB_INIT_DATABASES" "${MARIADB_INIT_DATABASES}"
     fi
 
     if [ -n "${MARIADB_ROOT_PASSWORD}" ]; then
