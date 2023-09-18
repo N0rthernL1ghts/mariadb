@@ -4,13 +4,16 @@ services:
   database:
     image: ghcr.io/n0rthernl1ghts/mariadb:latest
     environment:
+      PUID: 1000
+      PGID: 1000
       MARIADB_USERNAME: 'webapp'
+      MARIADB_INIT_USERS: 'app,docs-app'
+      MARIADB_INIT_DATABASES: 'app,cars,docs'
       MARIADB_PASSWORD: 'example_password'
-      MARIADB_DATABASE: 'app,cars,docs'
       MARIADB_ROOT_PASSWORD: 'example_password'
     volumes:
+      - config:/config
       - data:/var/lib/mysql
-      - backup:/var/lib/backup
       - log:/var/log/mysql
     networks:
       default: {aliases: [database]}
@@ -34,6 +37,6 @@ networks:
   database:
 
 volumes:
-  backup:
+  config:
   data:
   log:

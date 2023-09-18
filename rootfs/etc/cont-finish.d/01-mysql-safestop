@@ -1,4 +1,0 @@
-#!/usr/bin/with-contenv bash
-set -e
-echo "Attempting to safely shutdown mariadb service..."
-/usr/bin/mysql-shutdown

@@ -1,0 +1,44 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+set -eo pipefail
+
+create-env-file() {
+    local envVar="${1:?Environment variable is required}"
+    local envValue="${2:?Environment value is required}"
+
+    if [ -f "/var/run/s6/container_environment/${envVar}" ]; then
+        echo "Updating env file '${envVar}'"
+    else
+        echo "Creating env file '${envVar}'"
+    fi
+
+    # Inject env into s6 environment
+    echo -n "${envValue}" > "/var/run/s6/container_environment/${envVar}"
+}
+
+# init-mariadb-initdb-adapter main
+main() {
+    # Find legacy variables and create env overrides/mappings to MYSQL_PASSWORD/MYSQL_DATABASE/MYSQL_USER
+
+    if [ -n "${MARIADB_USERNAME}" ]; then
+        echo "Warning: Deprecated variable 'MARIADB_USERNAME' is ignored during initdb"
+        echo "Please use 'MARIADB_INIT_USERS' instead"
+    fi
+
+    if [ -n "${MARIADB_PASSWORD}" ]; then
+        echo "Warning: Deprecated variable 'MARIADB_PASSWORD' is ignored during initdb"
+        echo "Please use 'MARIADB_INIT_USERS' instead"
+    fi
+
+    if [ -n "${MARIADB_DATABASE}" ]; then
+        echo "Warning: Deprecated variable 'MARIADB_DATABASE'"
+        echo "Please use 'MARIADB_INIT_DATABASES' instead"
+    fi
+
+    if [ -n "${MARIADB_ROOT_PASSWORD}" ]; then
+        create-env-file "MYSQL_ROOT_PASSWORD" "${MARIADB_ROOT_PASSWORD}"
+    fi
+    
+}
+main

@@ -1,4 +1,0 @@
-#!/usr/bin/with-contenv sh
-set -e
-
-attr /var/lib/mysql/ true mysql:mysql 0770 2771

@@ -1,6 +1,11 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 
-#set -eo pipefail
+set -o pipefail
+
+start_mariadb() {
+    mariadbd --datadir="${DATADIR}" --user=abc &
+}
 
 # Generate a random password
 generate_password() {
@@ -99,7 +104,11 @@ create_batch_databases() {
 
 # Main function
 main() {
+    exec > >(while read line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
+
     echo "> [MariaDB Runtime Bootstrap v2.1]"
+
+    start_mariadb
  
     until db-util healthcheck >/dev/null 2>&1;
     do
@@ -144,10 +153,12 @@ main() {
 
     db-util flush-privileges
 
+    mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
+
     echo "> Bootstrap complete."
 
-    sleep infinity
+    # Make sure that all processes have exited
+    wait
 }
 
 main "$@"
-return $?
