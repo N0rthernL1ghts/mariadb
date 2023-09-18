@@ -1,0 +1,22 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+set -eo pipefail
+
+# init-mariadb-config-parse-template main
+main() {
+    exec > >(while read line; do echo "[init-mariadb-config-parse-template] ${line}"; done) 2>&1
+
+    if [ -f "/config/custom.cnf" ]; then
+        echo "Warning: Custom config file already exists. No changes will apply."
+    fi
+
+    echo "Parsing MariaDB config"
+
+    rm -f /defaults/custom.cnf
+
+    /usr/bin/gomplate -V \
+        -o /defaults/custom.cnf \
+        -f /defaults/custom.template.cnf
+}
+main

@@ -1,8 +1,13 @@
+FROM ghcr.io/hairyhenderson/gomplate:v3.11.5-alpine AS gomplate
+
 # Build rootfs
 FROM scratch AS rootfs
 
 # Copy overlay
 COPY ["rootfs", "/"]
+
+# Install gomplate
+COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
 
 
