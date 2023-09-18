@@ -3,6 +3,10 @@
 
 #set -eo pipefail
 
+start_mariadb() {
+    mariadbd --datadir="${DATADIR}" --user=abc &
+}
+
 # Generate a random password
 generate_password() {
     openssl rand -base64 32 | tr -d "=+/" | cut -c1-16
@@ -101,6 +105,8 @@ create_batch_databases() {
 # Main function
 main() {
     echo "> [MariaDB Runtime Bootstrap v2.1]"
+
+    start_mariadb
  
     until db-util healthcheck >/dev/null 2>&1;
     do
@@ -144,6 +150,8 @@ main() {
     fi
 
     db-util flush-privileges
+
+    mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
 
     echo "> Bootstrap complete."
 }
