@@ -34,7 +34,6 @@ function "get-args" {
   params = [mariadb_version, base_alpine_version]
   result = {
     MARIADB_VERSION = mariadb_version
-    BASE_ALPINE_VERSION = base_alpine_version
   }
 }
 
@@ -79,10 +78,10 @@ function "get-tags" {
 
 target "10_6" {
   inherits   = ["build-dockerfile", "build-platforms", "build-common"]
-  cache-from = get-cache-from("10.6.14")
-  cache-to   = get-cache-to("10.6.14")
+  cache-from = get-cache-from("10.6.13")
+  cache-to   = get-cache-to("10.6.13")
   tags       = get-tags("10.6", [])
-  args       = get-args("10.6.14-r0", "3.15")
+  args       = get-args("10.6.13")
 }
 
 target "10_11" {
@@ -90,5 +89,5 @@ target "10_11" {
   cache-from = get-cache-from("10.11.5")
   cache-to   = get-cache-to("10.11.5")
   tags       = get-tags("10.11", ["10", "latest"])
-  args       = get-args("10.11.5-r0", "3.18.2")
+  args       = get-args("10.11.5-r0")
 }
