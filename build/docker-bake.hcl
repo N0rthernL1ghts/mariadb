@@ -89,5 +89,5 @@ target "10_11" {
   cache-from = get-cache-from("10.11.5")
   cache-to   = get-cache-to("10.11.5")
   tags       = get-tags("10.11", ["10", "latest"])
-  args       = get-args("10.11.5-r0")
+  args       = get-args("10.11.5")
 }

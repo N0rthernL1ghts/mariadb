@@ -1,3 +1,5 @@
+ARG MARIADB_VERSION="10.11.5"
+
 FROM ghcr.io/hairyhenderson/gomplate:v3.11.5-alpine AS gomplate
 
 # Build rootfs
@@ -12,7 +14,7 @@ COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
 
 # Final stage
-ARG MARIADB_VERSION="10.11.5"
+ARG MARIADB_VERSION
 FROM --platform=${TARGETPLATFORM} lscr.io/linuxserver/mariadb:${MARIADB_VERSION}
 
 RUN set -eux \
