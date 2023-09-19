@@ -8,7 +8,12 @@ main() {
     exec > >(while read line; do echo "[init-mariadb-config-parse-template] ${line}"; done) 2>&1
 
     if [ -f "/config/custom.cnf" ]; then
-        echo "Warning: Custom config file already exists. No changes will apply."
+        if [ "${FORCE_CONFIG_OVERWRITE:-0}" -eq 1 ]; then
+            echo "Warning: Custom config file already exists. Forcing overwrite."
+            rm -f /config/custom.cnf
+        else
+            echo "Warning: Custom config file already exists. No changes will apply."
+        fi
     fi
 
     echo "Parsing MariaDB config"

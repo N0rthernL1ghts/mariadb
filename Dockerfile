@@ -36,3 +36,4 @@ LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>" \
 
 ENV MARIADB_VERSION="${MARIADB_VERSION}"
 ENV DATADIR="/var/lib/mysql"
+ENV FORCE_CONFIG_OVERWRITE="0"
