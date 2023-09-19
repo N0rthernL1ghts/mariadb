@@ -34,9 +34,9 @@ create_user() {
         echo "> User '${user}' created with password '${password}'"
 
         if [ "${is_random_password}" -eq 1 ]; then
-            echo "${password}" >"/var/lib/mysql/.${user}.password"
+            echo "${password}" >"/config/.${user}.password"
             echo "  Random password generated"
-            echo "  Password saved in /var/lib/mysql/.${user}.password"
+            echo "  Password saved in /config/.${user}.password"
             echo "  It is recommended to remove this file after retrieving the password"
         fi
 
