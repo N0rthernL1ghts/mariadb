@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# init-fix-permissions main
+main() {
+    # This will prepend service name to all output from here
+    exec > >(while read line; do echo "[init-fix-permissions] ${line}"; done) 2>&1
+
+    lsiown -R abc:abc "${DATADIR}"
+    lsiown -R abc:abc "/config"
+}
+main
