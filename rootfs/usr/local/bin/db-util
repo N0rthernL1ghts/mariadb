@@ -3,7 +3,7 @@
 set -eo pipefail
 
 execute_mysql_command() {
-    mysql --user root --password="${MYSQL_ROOT_PASSWORD:?}" -ve "${1:?}" "${@:2}"
+    mysql --user root --password="${MARIADB_ROOT_PASSWORD:?}" -ve "${1:?}" "${@:2}"
 }
 
 does_user_exist() {
