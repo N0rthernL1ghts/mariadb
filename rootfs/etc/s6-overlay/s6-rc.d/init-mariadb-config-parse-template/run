@@ -13,6 +13,7 @@ main() {
             rm -f /config/custom.cnf
         else
             echo "Warning: Custom config file already exists. No changes will apply."
+            echo "         To force overwrite, set FORCE_CONFIG_OVERWRITE=1"
         fi
     fi
 
