@@ -3,11 +3,33 @@
 
 set -o pipefail
 
+start_mariadb() {
+    mariadbd --datadir="${DATADIR}" --user=abc
+}
+
+stop_mariadb() {
+    mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
+}
+
 # Main function
 main() {
-    exec > >(while read line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
+    exec > >(while read -r line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
 
-    /app/mariadb-bootstrap
+    local bootstrapPid
+
+    printf "Starting temporary MariaDB instance for bootstrap...\n"
+    start_mariadb &
+
+    /app/mariadb-bootstrap &
+    bootstrapPid=$!
+
+    wait "${bootstrapPid}"
+    kill -TERM "${bootstrapPid}" 2>/dev/null
+
+    printf "Stopping MariaDB instance\n"
+    stop_mariadb
+
+    printf "Bootstrap service complete.\n"
 }
 
 main "$@"
