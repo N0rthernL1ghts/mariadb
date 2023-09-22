@@ -102,6 +102,33 @@ create_batch_databases() {
     done
 }
 
+function checkHashUpdate() {
+    local inputString="${1:?Input string required}"
+    local hashFile="${2:?Hash file required}"
+    local calculatedHash
+
+    # Calculate SHA256 hash of the input string
+    calculatedHash=$(echo -n "${inputString}" | sha256sum | awk '{print $1}')
+
+    if [ ! -f "${hashFile}" ]; then
+        printf "> Warning: Hash file '%s' doesn't exist. Creating a new one with hash '%s'.\n" "${hashFile}" "${calculatedHash}" >&2
+
+        # Create a new hash file with the new hash and return 1 to indicate that the hash has changed (since there was no previous hash)
+        printf "%s" "${calculatedHash}" >"${hashFile}"
+        return 1
+    fi
+
+    # Compare the new hash with the stored hash
+    if [ "${calculatedHash}" == "$(cat "${hashFile}")" ]; then
+        # Hashes are the same, meaning there is nothing to update
+        return 0
+    fi
+
+    # Update the hash file with the new hash and return 1 to indicate that the hash has changed
+    printf "%s" "${calculatedHash}" >"${hashFile}"
+    return 1
+}
+
 # Main function
 main() {
     exec > >(while read line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
@@ -109,9 +136,8 @@ main() {
     echo "> [MariaDB Runtime Bootstrap v2.1]"
 
     start_mariadb
- 
-    until db-util healthcheck >/dev/null 2>&1;
-    do
+
+    until db-util healthcheck >/dev/null 2>&1; do
         echo "> Waiting for MariaDB to become ready..."
         sleep 1
     done
@@ -141,17 +167,28 @@ main() {
 
     sleep 1
 
+    echo "> Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes..."
+
+    if checkHashUpdate "${MARIADB_INIT_USERS}" "/config/.mariadb_init_users.hash"; then
+        printf "> MARIADB_INIT_USERS unchanged. Skipping users initialization.\n"
+        MARIADB_INIT_USERS=""
+    fi
+
+    if checkHashUpdate "${MARIADB_INIT_DATABASES}" "/config/.mariadb_init_databases.hash"; then
+        printf "> MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
+        MARIADB_INIT_DATABASES=""
+    fi
+
     if [ -n "${MARIADB_INIT_USERS}" ]; then
         echo "> Initializing users..."
         create_batch_users "${MARIADB_INIT_USERS}"
+        db-util flush-privileges
     fi
 
     if [ -n "${MARIADB_INIT_DATABASES}" ]; then
         echo "> Initializing databases..."
         create_batch_databases "${MARIADB_INIT_DATABASES}"
     fi
-
-    db-util flush-privileges
 
     mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
 
