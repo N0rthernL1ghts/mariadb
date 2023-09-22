@@ -8,6 +8,9 @@ FROM scratch AS rootfs
 # Copy overlay
 COPY ["rootfs", "/"]
 
+# Copy scripts
+COPY ["/src/", "/app/"]
+
 # Install gomplate
 COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
