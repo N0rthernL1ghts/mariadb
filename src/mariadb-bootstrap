@@ -14,10 +14,11 @@ create_user() {
     local password="${2:-}"
     local is_random_password=0
 
-    echo "> Creating user '${user}'"
+    printf "Creating user '%s'\n" "${user}"
 
     if db-util user-exists "${user}"; then
-        echo "> User '${user}' already exists"
+        printf "User '%s' already exists\n" "${user}" >&2
+
         return 1
     fi
 
@@ -27,19 +28,19 @@ create_user() {
     fi
 
     if db-util user-create "${user}" "${password}"; then
-        echo "> User '${user}' created with password '${password}'"
+        printf "User '%s' created with password '%s'\n" "${user}" "${password}"
 
         if [ "${is_random_password}" -eq 1 ]; then
-            echo "${password}" >"/config/.${user}.password"
-            echo "  Random password generated"
-            echo "  Password saved in /config/.${user}.password"
-            echo "  It is recommended to remove this file after retrieving the password"
+            printf "%s" "${password}" >"/config/.${user}.password"
+
+            # Equivalent in printf
+            printf "  Random password generated\n  Password saved in /config/.%s.password\n  It is recommended to remove this file after retrieving the password\n" "${user}"
         fi
 
         return 0
     fi
 
-    echo "> Error: Failed to create user '${user}'"
+    printf "Error: Failed to create user '%s'\n" "${user}" >&2
     return 1
 }
 
@@ -47,19 +48,19 @@ create_user() {
 create_database() {
     local database="${1:?Database required}"
 
-    echo "> Creating database '${database}'"
+    printf "Creating database '%s'\n" "${database}"
 
     if db-util db-exists "${database}"; then
-        echo "> Database '${database}' already exists"
+        printf "Database '%s' already exists\n" "${database}"
         return 0
     fi
 
     if db-util db-create "${database}"; then
-        echo "> Database '${database}' created"
+        printf "Database '%s' created\n" "${database}"
         return 0
     fi
 
-    echo "> Error: Failed to create database '${database}'"
+    printf "Error: Failed to create database '%s'\n" "${database}" >&2
     return 1
 }
 
@@ -87,10 +88,12 @@ create_batch_databases() {
 
         if create_database "${database_name}"; then
             if [ -n "${assigned_user}" ]; then
-                echo "> Assigning user '${assigned_user}' to database '${database_name}'"
+                printf "Assigning user '%s' to database '%s'..." "${assigned_user}" "${database_name}"
+
                 db-util db-grant-privileges "${assigned_user}" "${database_name}"
             elif [ -n "${MARIADB_USERNAME}" ]; then
-                echo "> Assigning user '${MARIADB_USERNAME}' to database '${database_name}'"
+                printf "Assigning user '%s' to database '%s'..." "${MARIADB_USERNAME}" "${database_name}"
+
                 db-util db-grant-privileges "${MARIADB_USERNAME}" "${database_name}"
             fi
         fi
@@ -107,7 +110,7 @@ function checkHashUpdate() {
     calculatedHash=$(echo -n "${inputString}" | sha256sum | awk '{print $1}')
 
     if [ ! -f "${hashFile}" ]; then
-        printf "> Warning: Hash file '%s' doesn't exist. Creating a new one with hash '%s'.\n" "${hashFile}" "${calculatedHash}" >&2
+        printf "Warning: Hash file '%s' doesn't exist. Creating a new one with hash '%s'.\n" "${hashFile}" "${calculatedHash}" >&2
 
         # Create a new hash file with the new hash and return 1 to indicate that the hash has changed (since there was no previous hash)
         printf "%s" "${calculatedHash}" >"${hashFile}"
@@ -127,17 +130,17 @@ function checkHashUpdate() {
 
 # Main function
 main() {
-    echo "> [MariaDB Runtime Bootstrap v2.1]"
+    printf "[MariaDB Runtime Bootstrap v2.1]\n"
 
     until db-util healthcheck >/dev/null 2>&1; do
-        echo "> Waiting for MariaDB to become ready..."
-        sleep 1
+        printf "Waiting for MariaDB to become ready...\n"
+        sleep 0.5
     done
 
-    echo "> MariaDB ready. Proceeding with initialization"
+    printf "MariaDB ready. Proceeding with initialization\n"
 
     if [ -n "${MARIADB_USERNAME}" ]; then
-        echo "> Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead"
+        printf "Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead\n" >&2
 
         local username_entry="${MARIADB_USERNAME}:${MARIADB_PASSWORD}"
         if [ -n "${MARIADB_INIT_USERS}" ]; then
@@ -148,7 +151,7 @@ main() {
     fi
 
     if [ -n "${MARIADB_DATABASE}" ]; then
-        echo "> Warning: MARIADB_DATABASE is deprecated. Please use MARIADB_INIT_DATABASES instead"
+        printf "Warning: MARIADB_DATABASE is deprecated. Please use MARIADB_INIT_DATABASES instead\n" >&2
 
         if [ -n "${MARIADB_INIT_DATABASES}" ]; then
             MARIADB_INIT_DATABASES="${MARIADB_INIT_DATABASES},${MARIADB_DATABASE}"
@@ -159,30 +162,30 @@ main() {
 
     sleep 1
 
-    echo "> Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes..."
+    printf "Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes...\n"
 
     if checkHashUpdate "${MARIADB_INIT_USERS}" "/config/.mariadb_init_users.hash"; then
-        printf "> MARIADB_INIT_USERS unchanged. Skipping users initialization.\n"
+        printf "MARIADB_INIT_USERS unchanged. Skipping users initialization.\n"
         MARIADB_INIT_USERS=""
     fi
 
     if checkHashUpdate "${MARIADB_INIT_DATABASES}" "/config/.mariadb_init_databases.hash"; then
-        printf "> MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
+        printf "MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
         MARIADB_INIT_DATABASES=""
     fi
 
     if [ -n "${MARIADB_INIT_USERS}" ]; then
-        echo "> Initializing users..."
+        printf "Initializing users...\n"
+
         create_batch_users "${MARIADB_INIT_USERS}"
         db-util flush-privileges
     fi
 
     if [ -n "${MARIADB_INIT_DATABASES}" ]; then
-        echo "> Initializing databases..."
+        printf "Initializing databases...\n"
+
         create_batch_databases "${MARIADB_INIT_DATABASES}"
     fi
-
-    echo "> Bootstrap complete."
 }
 
 main "$@"

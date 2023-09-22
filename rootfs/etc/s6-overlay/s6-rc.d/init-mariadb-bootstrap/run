@@ -29,7 +29,7 @@ main() {
     printf "Stopping MariaDB instance\n"
     stop_mariadb
 
-    printf "Bootstrap service complete.\n"
+    printf "Bootstrap completed\n"
 }
 
 main "$@"
