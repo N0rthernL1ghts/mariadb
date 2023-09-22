@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/env bash
 # shellcheck shell=bash
 
 set -o pipefail
@@ -131,8 +131,6 @@ function checkHashUpdate() {
 
 # Main function
 main() {
-    exec > >(while read line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
-
     echo "> [MariaDB Runtime Bootstrap v2.1]"
 
     start_mariadb
