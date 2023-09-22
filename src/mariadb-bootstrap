@@ -132,13 +132,6 @@ function checkHashUpdate() {
 main() {
     printf "[MariaDB Runtime Bootstrap v2.1]\n"
 
-    until db-util healthcheck >/dev/null 2>&1; do
-        printf "Waiting for MariaDB to become ready...\n"
-        sleep 0.5
-    done
-
-    printf "MariaDB ready. Proceeding with initialization\n"
-
     if [ -n "${MARIADB_USERNAME}" ]; then
         printf "Warning: MARIADB_USERNAME is deprecated. Please use MARIADB_INIT_USERS instead\n" >&2
 
@@ -173,6 +166,13 @@ main() {
         printf "MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
         MARIADB_INIT_DATABASES=""
     fi
+
+    until db-util healthcheck >/dev/null 2>&1; do
+        printf "Waiting for MariaDB to become ready...\n"
+        sleep 0.5
+    done
+
+    printf "MariaDB ready. Proceeding with initialization\n"
 
     if [ -n "${MARIADB_INIT_USERS}" ]; then
         printf "Initializing users...\n"
