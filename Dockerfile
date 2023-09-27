@@ -35,8 +35,11 @@ LABEL maintainer="Aleksandar Puharic <aleksandar@puharic.com>" \
       org.opencontainers.image.source="https://github.com/N0rthernL1ghts/mariadb" \
       org.opencontainers.image.description="MariaDB ${MARIADB_VERSION} (${TARGETPLATFORM}) - Based on lscr.io/linuxserver/mariadb:${MARIADB_VERSION}" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.version="${MARIADB_VERSION}"
+      org.opencontainers.image.version="${MARIADB_VERSION}" \
+      build_version="Custom"
+
 
 ENV MARIADB_VERSION="${MARIADB_VERSION}"
 ENV DATADIR="/var/lib/mysql"
 ENV FORCE_CONFIG_OVERWRITE="0"
+ENV LSIO_FIRST_PARTY=false
