@@ -12,7 +12,6 @@ generate_password() {
 create_user() {
     local user="${1:?User required}"
     local password="${2:-}"
-    local is_random_password=0
 
     printf "Creating user '%s'\n" "${user}"
 
@@ -23,19 +22,24 @@ create_user() {
     fi
 
     if [ -z "${password}" ]; then
-        password=$(generate_password)
-        is_random_password=1
+        local passwordFile="/config/.${user}.password"
+        local userPasswordEnvVar="MARIADB_USER_${user}_PASSWORD"
+        local userPasswordEnvValue="${!userPasswordEnvVar}"
+
+        if [ -n "${userPasswordEnvValue}" ] && [ "${#userPasswordEnvValue}" -gt "1" ]; then
+            password="${userPasswordEnvValue}"
+            printf "  Password retrieved from secret environment %s\n" "${userPasswordEnvValue}"
+        elif [ -f "${passwordFile}" ] && [ -s "${passwordFile}" ]; then
+            password=$(<"${passwordFile}")
+            printf "  Password retrieved from %s\n" "${passwordFile}"
+        else
+            password=$(generate_password)
+            printf "  Random password has been generated and stored in %s\n" "${passwordFile}"
+        fi
     fi
 
     if db-util user-create "${user}" "${password}"; then
         printf "User '%s' created with password '%s'\n" "${user}" "${password}"
-
-        if [ "${is_random_password}" -eq 1 ]; then
-            printf "%s" "${password}" >"/config/.${user}.password"
-
-            # Equivalent in printf
-            printf "  Random password generated\n  Password saved in /config/.%s.password\n  It is recommended to remove this file after retrieving the password\n" "${user}"
-        fi
 
         return 0
     fi
