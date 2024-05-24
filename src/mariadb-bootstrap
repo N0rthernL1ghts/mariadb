@@ -28,7 +28,7 @@ create_user() {
 
         if [ -n "${userPasswordEnvValue}" ] && [ "${#userPasswordEnvValue}" -gt "1" ]; then
             password="${userPasswordEnvValue}"
-            printf "  Password retrieved from secret environment %s\n" "${userPasswordEnvValue}"
+            printf "  Password retrieved from secret environment %s\n" "${userPasswordEnvVar}"
         elif [ -f "${passwordFile}" ] && [ -s "${passwordFile}" ]; then
             password=$(<"${passwordFile}")
             printf "  Password retrieved from %s\n" "${passwordFile}"
