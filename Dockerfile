@@ -9,7 +9,10 @@ FROM scratch AS rootfs
 COPY ["rootfs", "/"]
 
 # Copy scripts
-COPY ["/src/", "/app/"]
+COPY ["./src/db-util.sh", "/usr/local/bin/db-util"]
+COPY ["./src/healtcheck.sh", "/usr/bin/healtcheck"]
+COPY ["./src/mysql-shutdown.sh", "/usr/bin/mysql-shutdown"]
+COPY ["./src/mariadb-bootstrap.sh", "/app/mariadb-bootstrap"]
 
 # Install gomplate
 COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
