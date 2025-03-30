@@ -15,6 +15,7 @@ Important: While based on [linuxserver/docker-mariadb](https://github.com/linuxs
 
 * ghcr.io/n0rthernl1ghts/mariadb:10.6
 * ghcr.io/n0rthernl1ghts/mariadb:10.11
+* ghcr.io/n0rthernl1ghts/mariadb:11.4
 * ghcr.io/n0rthernl1ghts/mariadb:latest
 
 ## Volumes
