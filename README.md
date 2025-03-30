@@ -92,7 +92,7 @@ MARIADB_ISAMCHK_KEY_BUFFER = 16M
 
 ## Container healthcheck
 
-Run `healthcheck` script to check if the container is healthy. Defined in your `docker-compose.yml` file like this:
+Run `healthcheck` script to check if the container is healthy. Defined in your `compose.yaml` file like this:
 ```bash
     healthcheck:
       test: ["CMD", "/usr/bin/healthcheck"]

@@ -1,5 +1,7 @@
 .git/
 docker-compose.yml
 docker-compose.override.yml
+compose.yaml
+compose.override.yaml
 data/
 secrets/

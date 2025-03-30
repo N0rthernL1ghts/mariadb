@@ -3,3 +3,4 @@ data/
 secrets/
 codealike.json
 docker-compose.override.yml
+compose.override.yaml
