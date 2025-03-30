@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 
 set -o pipefail

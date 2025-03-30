@@ -1,4 +1,5 @@
-#!/usr/bin/env sh
+#!/usr/bin/with-contenv sh
+# shellcheck shell=sh
 set -e
 
 mysql << EOF
