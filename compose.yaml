@@ -1,20 +1,35 @@
-version: "3.7"
+secrets:
+  mariadb_root_password:
+    file: ./secrets/mariadb_root_password.txt
+
+networks:
+  default:
+  database:
 
 services:
   database:
     image: ghcr.io/n0rthernl1ghts/mariadb:latest
+    deploy:
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          memory: 2G
+        limits:
+          memory: 3G
     environment:
       PUID: 1000
       PGID: 1000
       MARIADB_USERNAME: 'webapp'
       MARIADB_INIT_USERS: 'app,docs-app'
       MARIADB_INIT_DATABASES: 'app,cars,docs'
-      MARIADB_PASSWORD: 'example_password'
-      MARIADB_ROOT_PASSWORD: 'example_password'
+      FORCE_CONFIG_OVERWRITE: 'false'
     volumes:
-      - config:/config
-      - data:/var/lib/mysql
-      - log:/var/log/mysql
+      - ./data/mariadb/config:/config
+      - ./data/mariadb/data:/var/lib/mysql
+      - ./data/mariadb/log:/var/log/mysql
+    secrets:
+      - mariadb_root_password
     networks:
       default: {aliases: [database]}
       database: null
@@ -23,20 +38,3 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-    deploy:
-      restart_policy:
-        condition: on-failure
-      resources:
-        reservations:
-          memory: 2G
-        limits:
-          memory: 3G
-
-networks:
-  default:
-  database:
-
-volumes:
-  config:
-  data:
-  log:
