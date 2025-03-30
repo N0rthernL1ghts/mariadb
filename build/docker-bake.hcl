@@ -23,7 +23,7 @@ target "build-common" {
 ######################
 
 variable "REGISTRY_CACHE" {
-  default = "docker.io/nlss/mariadb-cache"
+  default = "ghcr.io/n0rthernl1ghts/mariadb-cache"
 }
 
 ######################
@@ -61,12 +61,10 @@ function "get-tags" {
   params = [version, extra_versions]
   result = concat(
     [
-      "docker.io/nlss/mariadb:${version}",
       "ghcr.io/n0rthernl1ghts/mariadb:${version}"
     ],
     flatten([
       for extra_version in extra_versions : [
-        "docker.io/nlss/mariadb:${extra_version}",
         "ghcr.io/n0rthernl1ghts/mariadb:${extra_version}"
       ]
     ])
