@@ -3,11 +3,16 @@
 
 main() {
     if [[ -z ${LSIO_NON_ROOT_USER} ]]; then
-        exec mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal --user=abc
+        mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal --user=abc
+
+        # own the folder the pid for mysql runs in
+        lsiown -R abc:abc /run/mysqld
+        lsiown -R abc:abc /config
+
         return
     fi
 
-    exec mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal
+    mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal
 }
 
 main
