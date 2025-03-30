@@ -159,6 +159,11 @@ main() {
 
     sleep 1
 
+    until db-util healthcheck >/dev/null 2>&1; do
+        printf "Waiting for MariaDB to become ready...\n"
+        sleep 0.5
+    done
+
     printf "Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes...\n"
 
     if checkHashUpdate "${MARIADB_INIT_USERS}" "/config/.mariadb_init_users.hash"; then
@@ -170,11 +175,6 @@ main() {
         printf "MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
         MARIADB_INIT_DATABASES=""
     fi
-
-    until db-util healthcheck >/dev/null 2>&1; do
-        printf "Waiting for MariaDB to become ready...\n"
-        sleep 0.5
-    done
 
     printf "MariaDB ready. Proceeding with initialization\n"
 
