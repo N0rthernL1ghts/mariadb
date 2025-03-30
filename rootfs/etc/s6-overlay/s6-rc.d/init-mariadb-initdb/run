@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+main() {
+    if [[ -z ${LSIO_NON_ROOT_USER} ]]; then
+        exec mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal --user=abc
+        return
+    fi
+
+    exec mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=normal
+}
+
+main
