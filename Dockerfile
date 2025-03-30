@@ -14,6 +14,9 @@ COPY ["/src/", "/app/"]
 # Install gomplate
 COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
+# Install docker-env-secrets service
+COPY --from=ghcr.io/n0rthernl1ghts/docker-env-secrets:latest ["/", "/"]
+
 
 
 # Final stage
