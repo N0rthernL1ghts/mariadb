@@ -1,3 +1,5 @@
 .idea/
+data/
+secrets/
 codealike.json
 docker-compose.override.yml
