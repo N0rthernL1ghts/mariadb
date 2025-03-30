@@ -4,7 +4,7 @@
 set -eo pipefail
 
 execute_mysql_command() {
-    mariadb --user root --password="${MARIADB_ROOT_PASSWORD:?}" -ve "${1:?}" "${@:2}"
+    mariadb --user root -ve "${1:?}" "${@:2}"
 }
 
 does_user_exist() {

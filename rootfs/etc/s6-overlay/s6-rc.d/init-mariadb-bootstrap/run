@@ -8,7 +8,7 @@ start_mariadb() {
 }
 
 stop_mariadb() {
-    mariadb-admin -u root --password="${MARIADB_ROOT_PASSWORD}" shutdown
+    mariadb-admin --user=root shutdown
 }
 
 # Main function
