@@ -18,7 +18,7 @@ COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
 # Final stage
 ARG MARIADB_VERSION
-FROM --platform=${TARGETPLATFORM} lscr.io/linuxserver/mariadb:${MARIADB_VERSION}
+FROM lscr.io/linuxserver/mariadb:${MARIADB_VERSION}
 
 RUN set -eux \
     && apk add --no-cache openssl
