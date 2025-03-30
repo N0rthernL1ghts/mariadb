@@ -7,7 +7,7 @@ FROM scratch AS rootfs
 
 # Copy scripts
 COPY ["./src/db-util.sh", "/usr/local/bin/db-util"]
-COPY ["./src/healtcheck.sh", "/usr/bin/healtcheck"]
+COPY ["./src/healthcheck.sh", "/usr/bin/healthcheck"]
 COPY ["./src/mysql-shutdown.sh", "/usr/bin/mysql-shutdown"]
 COPY ["./src/mariadb-bootstrap.sh", "/app/mariadb-bootstrap"]
 
