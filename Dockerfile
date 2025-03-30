@@ -5,9 +5,6 @@ FROM ghcr.io/hairyhenderson/gomplate:v4.3.1-alpine AS gomplate
 # Build rootfs
 FROM scratch AS rootfs
 
-# Copy overlay
-COPY ["rootfs", "/"]
-
 # Copy scripts
 COPY ["./src/db-util.sh", "/usr/local/bin/db-util"]
 COPY ["./src/healtcheck.sh", "/usr/bin/healtcheck"]
@@ -19,6 +16,9 @@ COPY --from=gomplate  ["/bin/gomplate", "/usr/bin/gomplate"]
 
 # Install docker-env-secrets service
 COPY --from=ghcr.io/n0rthernl1ghts/docker-env-secrets:latest ["/", "/"]
+
+# Copy overlay
+COPY ["rootfs", "/"]
 
 
 
