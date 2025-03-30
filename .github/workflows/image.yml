@@ -1,9 +1,20 @@
 name: Build
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * */7"
   push:
     branches:
-      - 'master'
+      - master
+    paths:
+      - .github/workflows/image.yml  # This workflow file itself
+      - .dockerignore
+      - Dockerfile
+      - build/docker-bake.hcl
+      - rootfs/**
+      - src/**
+
 
 jobs:
   docker:
