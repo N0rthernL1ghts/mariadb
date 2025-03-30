@@ -8,6 +8,8 @@ These are docker images for [MariaDB](https://mariadb.org) database running on a
 
 Originally a standalone fork of [dockhippie/mariadb](https://github.com/dockhippie/mariadb), which has completely diverged from the original and eventually rebased to [linuxserver/docker-mariadb](https://github.com/linuxserver/docker-mariadb) image. 
 
+Important: While based on [linuxserver/docker-mariadb](https://github.com/linuxserver/docker-mariadb), this image is not compatible with the original image. It has been heavily modified and is not intended to be used as a drop-in replacement.
+
 
 ## Versions
 
