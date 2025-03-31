@@ -1,7 +1,5 @@
 # MariaDB
-
-[![](https://images.microbadger.com/badges/version/nlss/mariadb.svg)](https://microbadger.com/images/nlss/mariadb "Get your own version badge on microbadger.com")
-[![](https://images.microbadger.com/badges/image/nlss/mariadb.svg)](https://microbadger.com/images/nlss/mariadb "Get your own image badge on microbadger.com")
+#### Lightweight docker image for MariaDB with advanced features for automated provisioning
 
 
 These are docker images for [MariaDB](https://mariadb.org) database running on an [Alpine Linux container](https://registry.hub.docker.com/u/webhippie/alpine/).
