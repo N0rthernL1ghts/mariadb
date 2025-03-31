@@ -25,7 +25,9 @@ Important: While based on [linuxserver/docker-mariadb](https://github.com/linuxs
 ## Ports
 
 * 3306
+* 8385 (for maintenance purposes - immune to max_connections limit)
 
+WARNING: NEVER expose these ports to the public internet or LAN. Starting this container with host networking will do that.
 
 ## Available environment variables
 
