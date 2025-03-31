@@ -1,6 +1,8 @@
 secrets:
   mariadb_root_password:
     file: ./secrets/mariadb_root_password.txt
+  mariadb_user_example_password: # Password for user 'example'
+    file: ./secrets/mariadb_user_example_password.txt
 
 networks:
   default:
@@ -20,7 +22,7 @@ services:
     environment:
       PUID: 1000
       PGID: 1000
-      MARIADB_INIT_USERS: 'app,docs-app'
+      MARIADB_INIT_USERS: 'example,app,docs-app' # Notice that the password for 'example' is set in the secrets section
       MARIADB_INIT_DATABASES: 'app,cars,docs'
       FORCE_CONFIG_OVERWRITE: 'false'
     volumes:
@@ -29,6 +31,7 @@ services:
       - ./data/mariadb/log:/var/log/mysql
     secrets:
       - mariadb_root_password
+      - mariadb_user_example_password
     networks:
       default: {aliases: [database]}
       database: null

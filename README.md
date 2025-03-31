@@ -40,7 +40,8 @@ PGID = 1000
 # This image specific
 MARIADB_ROOT_PASSWORD = example-root-password
 MARIADB_INIT_DATABASES = app,app2,app3
-MARIADB_INIT_USERS = lorem|ipsum|dolor|foo:example-password-for-foo  # Format: user1|user2|user3:password1
+MARIADB_INIT_USERS = lorem|ipsum|dolor|foo  # Format: user1|user2|user3
+MARIADB_USER_FOO_PASSWORD = example-password-for-foo
 FORCE_CONFIG_OVERWRITE = 0 # Force overwriting of existing config file that is usually generated on first run
 ```
 If there is no password set for users on the list, a random password will be generated and printed to the STDOUT. Password is also stored in the `/config/.username.password` file. You should delete this file afterwards.
