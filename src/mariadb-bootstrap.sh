@@ -28,7 +28,7 @@ create_user() {
 
         if [ -n "${userPasswordEnvValue}" ] && [ "${#userPasswordEnvValue}" -gt "1" ]; then
             password="${userPasswordEnvValue}"
-            printf "  Password retrieved from secret environment %s\n" "${userPasswordEnvVar}"
+            printf "  Password retrieved from environment %s\n" "${userPasswordEnvVar}"
         elif [ -f "${passwordFile}" ] && [ -s "${passwordFile}" ]; then
             password=$(<"${passwordFile}")
             printf "  Password retrieved from %s\n" "${passwordFile}"
@@ -76,6 +76,12 @@ create_batch_users() {
 
     for user in ${users}; do
         IFS=':' read -r username password <<<"${user}"
+
+        if [ -n "${pasword}" ]; then
+            local password_var_name="MARIADB_USER_${username^^}_PASSWORD"
+            printf "Warning: Setting password by %s:password syntax is deprecated. Please use environment variable '%s' instead\n" "${username}" "${password_var_name}" >&2
+        fi
+
         create_user "${username}" "${password:-}"
         sleep 0.1
     done
