@@ -2,17 +2,27 @@
 # shellcheck shell=bash
 
 main() {
+    exec > >(while read -r line; do echo "[init-mariadb-initdb] ${line}"; done) 2>&1
+
+    declare -a flags
+
+    flags=(
+        "--datadir=${DATADIR:?}"
+        '--auth-root-authentication-method=socket'
+        '--skip-test-db'
+        '--extra-file=/defaults/mariadb-init.sql'
+    )
+
     if [[ -z ${LSIO_NON_ROOT_USER} ]]; then
-        mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=socket  --skip-test-db --user=abc
+        flags+=('--user=abc')
 
         # own the folder the pid for mysql runs in
         lsiown -R abc:abc /run/mysqld
         lsiown -R abc:abc /config
-
-        return
     fi
 
-    mariadb-install-db --datadir="${DATADIR}" --auth-root-authentication-method=socket --skip-test-db
+    set -x
+    mariadb-install-db "${flags[@]}"
 }
 
 main
