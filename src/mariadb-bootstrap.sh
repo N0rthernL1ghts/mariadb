@@ -23,7 +23,7 @@ create_user() {
 
     if [ -z "${password}" ]; then
         local passwordFile="/config/.${user}.password"
-        local userPasswordEnvVar="MARIADB_USER_${user}_PASSWORD"
+        local userPasswordEnvVar="MARIADB_USER_${user^^}_PASSWORD"
         local userPasswordEnvValue="${!userPasswordEnvVar}"
 
         if [ -n "${userPasswordEnvValue}" ] && [ "${#userPasswordEnvValue}" -gt "1" ]; then
