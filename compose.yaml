@@ -20,7 +20,6 @@ services:
     environment:
       PUID: 1000
       PGID: 1000
-      MARIADB_USERNAME: 'webapp'
       MARIADB_INIT_USERS: 'app,docs-app'
       MARIADB_INIT_DATABASES: 'app,cars,docs'
       FORCE_CONFIG_OVERWRITE: 'false'
