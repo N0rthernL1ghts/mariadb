@@ -1,0 +1,16 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+# init-mariadb-provision main
+main() {
+    # This will prepend service name to all output from here
+    exec > >(while read -r line; do echo "[init-mariadb-provision] ${line}"; done) 2>&1
+
+
+    echo "Starting MariaDB provisioning service"
+
+    mariadbd --datadir="${DATADIR}" --console --user=abc
+
+    echo "Provisioning service finished"
+}
+main

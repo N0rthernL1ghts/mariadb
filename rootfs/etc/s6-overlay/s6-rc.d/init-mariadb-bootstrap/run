@@ -3,10 +3,6 @@
 
 set -o pipefail
 
-start_mariadb() {
-    mariadbd --datadir="${DATADIR}" --user=abc
-}
-
 stop_mariadb() {
     mariadb-admin --user=root shutdown
 }
@@ -17,16 +13,13 @@ main() {
 
     local bootstrapPid
 
-    printf "Starting temporary MariaDB instance for bootstrap...\n"
-    start_mariadb &
-
     /app/mariadb-bootstrap &
     bootstrapPid=$!
 
     wait "${bootstrapPid}"
     kill -TERM "${bootstrapPid}" 2>/dev/null
 
-    printf "Stopping MariaDB instance\n"
+    printf "Stopping MariaDB provisioning instance\n"
     stop_mariadb
 
     printf "Bootstrap completed\n"
