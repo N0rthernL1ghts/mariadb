@@ -6,10 +6,14 @@ main() {
     # This will prepend service name to all output from here
     exec > >(while read -r line; do echo "[init-mariadb-provision] ${line}"; done) 2>&1
 
-
     echo "Starting MariaDB provisioning service"
 
-    mariadbd --datadir="${DATADIR}" --console --user=abc
+    if [[ -z ${LSIO_NON_ROOT_USER} ]]; then
+        mariadbd --datadir="${DATADIR}" --console --user=abc
+    else
+        echo "Running as root"
+        mariadbd --datadir="${DATADIR}" --console
+    fi
 
     echo "Provisioning service finished"
 }
