@@ -7,7 +7,7 @@ main() {
     # This will prepend service name to all output from here
     exec > >(while read -r line; do echo "[init-mariadb-provision-completed] ${line}"; done) 2>&1
 
-    if db-util healthcheck; then
+    if db-util healthcheck >/dev/null 2>&1; then
         echo "Service is still running. Shutting down..."
 
         # Suppress output
