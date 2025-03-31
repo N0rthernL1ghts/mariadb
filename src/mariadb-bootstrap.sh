@@ -157,11 +157,19 @@ main() {
         fi
     fi
 
-    sleep 1
+    # This equals to ~5 seconds considering the sleep interval of 0.5 seconds
+    local wait_limit=10
 
     until db-util healthcheck >/dev/null 2>&1; do
+        if [ "${wait_limit}" -le 0 ]; then
+            printf "Error: MariaDB failed to start\n" >&2
+            return 1
+        fi
+
         printf "Waiting for MariaDB to become ready...\n"
         sleep 0.5
+
+        ((wait_limit--))
     done
 
     printf "Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes...\n"
