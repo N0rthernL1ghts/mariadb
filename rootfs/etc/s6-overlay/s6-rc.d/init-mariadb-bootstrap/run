@@ -11,6 +11,9 @@ stop_mariadb() {
 main() {
     exec > >(while read -r line; do echo "[init-mariadb-bootstrap] ${line}"; done) 2>&1
 
+    # Make sure that the provisioning instance is stopped when the script exits
+    trap stop_mariadb EXIT SIGINT SIGTERM
+
     local bootstrapPid
 
     /app/mariadb-bootstrap &
@@ -18,9 +21,6 @@ main() {
 
     wait "${bootstrapPid}"
     kill -TERM "${bootstrapPid}" 2>/dev/null
-
-    printf "Stopping MariaDB provisioning instance\n"
-    stop_mariadb
 
     printf "Bootstrap completed\n"
 }
