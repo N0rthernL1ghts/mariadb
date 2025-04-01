@@ -8,6 +8,20 @@ generate_password() {
     openssl rand -base64 32 | tr -d "=+/" | cut -c1-16
 }
 
+# Trim input string.
+# Source: https://stackoverflow.com/a/3352015
+trim() {
+    local var="$*"
+
+    # remove leading whitespace characters
+    var="${var#"${var%%[![:space:]]*}"}"
+
+    # remove trailing whitespace characters
+    var="${var%"${var##*[![:space:]]}"}"
+
+    printf '%s' "${var}"
+}
+
 # Create a user function
 create_user() {
     local user="${1:?User required}"
@@ -27,10 +41,11 @@ create_user() {
         local user_password_env_value="${!user_password_env_var}"
 
         if [ -n "${user_password_env_value}" ] && [ "${#user_password_env_value}" -gt "1" ]; then
-            password="${user_password_env_value}"
+            password="$(trim "${user_password_env_value}")"
             printf "  Password retrieved from environment %s\n" "${user_password_env_var}"
         elif [ -f "${password_file}" ] && [ -s "${password_file}" ]; then
             password=$(<"${password_file}")
+            password=$(trim "${password}")
             printf "  Password retrieved from %s\n" "${password_file}"
         else
             password=$(generate_password)
