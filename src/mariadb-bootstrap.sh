@@ -22,6 +22,18 @@ trim() {
     printf '%s' "${var}"
 }
 
+get_user_password_from_env() {
+    local username="${1:?Username required}"
+    local password_var_name="MARIADB_USER_${username^^}_PASSWORD"
+    local password_var_value="${!password_var_name}"
+
+    if [ -z "${password_var_value}" ]; then
+        return 1
+    fi
+
+    trim "${password_var_value}"
+}
+
 # Create a user function
 create_user() {
     local user="${1:?User required}"
@@ -37,11 +49,12 @@ create_user() {
 
     if [ -z "${password}" ]; then
         local password_file="/config/.${user}.password"
-        local user_password_env_var="MARIADB_USER_${user^^}_PASSWORD"
-        local user_password_env_value="${!user_password_env_var}"
+        local user_password_env_value
+
+        user_password_env_value="$(get_user_password_from_env "${user}")"
 
         if [ -n "${user_password_env_value}" ] && [ "${#user_password_env_value}" -gt "1" ]; then
-            password="$(trim "${user_password_env_value}")"
+            password="${user_password_env_value}"
             printf "  Password retrieved from environment %s\n" "${user_password_env_var}"
         elif [ -f "${password_file}" ] && [ -s "${password_file}" ]; then
             password=$(<"${password_file}")
