@@ -40,7 +40,7 @@ PGID = 1000
 # This image specific
 MARIADB_ROOT_PASSWORD = example-root-password
 MARIADB_INIT_DATABASES = app,app2,app3
-MARIADB_INIT_USERS = lorem|ipsum|dolor|foo  # Format: user1|user2|user3
+MARIADB_INIT_USERS = lorem,ipsum,dolor,foo  # Format: user1,user2,user3
 MARIADB_USER_FOO_PASSWORD = example-password-for-foo
 FORCE_CONFIG_OVERWRITE = 0 # Force overwriting of existing config file that is usually generated on first run
 ```
