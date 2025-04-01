@@ -14,13 +14,7 @@ main() {
     # Make sure that the provisioning instance is stopped when the script exits
     trap stop_mariadb EXIT SIGINT SIGTERM
 
-    local bootstrapPid
-
-    /app/mariadb-bootstrap &
-    bootstrapPid=$!
-
-    wait "${bootstrapPid}"
-    kill -TERM "${bootstrapPid}" 2>/dev/null
+    /app/mariadb-bootstrap
 
     printf "Bootstrap completed\n"
 }

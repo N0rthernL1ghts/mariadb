@@ -4,22 +4,22 @@
 set -eo pipefail
 
 create-env-file() {
-    local envVar="${1:?Environment variable is required}"
-    local envValue="${2:?Environment value is required}"
+    local env_var="${1:?Environment variable is required}"
+    local env_value="${2:?Environment value is required}"
 
-    if [ -f "/var/run/s6/container_environment/${envVar}" ]; then
-        echo "Updating env file '${envVar}'"
+    if [ -f "/var/run/s6/container_environment/${env_var}" ]; then
+        echo "Updating env file '${env_var}'"
     else
-        echo "Creating env file '${envVar}'"
+        echo "Creating env file '${env_var}'"
     fi
 
     # Inject env into s6 environment
-    echo -n "${envValue}" > "/var/run/s6/container_environment/${envVar}"
+    echo -n "${env_value}" > "/var/run/s6/container_environment/${env_var}"
 }
 
 # init-mariadb-initdb-adapter main
 main() {
-    # Find legacy variables and create env overrides/mappings to MYSQL_PASSWORD/MYSQL_DATABASE/MYSQL_USER
+    # Find legacy variables and create env overrides/mappings
 
     if [ -n "${MARIADB_USERNAME}" ]; then
         echo "Warning: Deprecated variable 'MARIADB_USERNAME' is ignored during initdb"

@@ -22,19 +22,19 @@ create_user() {
     fi
 
     if [ -z "${password}" ]; then
-        local passwordFile="/config/.${user}.password"
-        local userPasswordEnvVar="MARIADB_USER_${user^^}_PASSWORD"
-        local userPasswordEnvValue="${!userPasswordEnvVar}"
+        local password_file="/config/.${user}.password"
+        local user_password_env_var="MARIADB_USER_${user^^}_PASSWORD"
+        local user_password_env_value="${!user_password_env_var}"
 
-        if [ -n "${userPasswordEnvValue}" ] && [ "${#userPasswordEnvValue}" -gt "1" ]; then
-            password="${userPasswordEnvValue}"
-            printf "  Password retrieved from environment %s\n" "${userPasswordEnvVar}"
-        elif [ -f "${passwordFile}" ] && [ -s "${passwordFile}" ]; then
-            password=$(<"${passwordFile}")
-            printf "  Password retrieved from %s\n" "${passwordFile}"
+        if [ -n "${user_password_env_value}" ] && [ "${#user_password_env_value}" -gt "1" ]; then
+            password="${user_password_env_value}"
+            printf "  Password retrieved from environment %s\n" "${user_password_env_var}"
+        elif [ -f "${password_file}" ] && [ -s "${password_file}" ]; then
+            password=$(<"${password_file}")
+            printf "  Password retrieved from %s\n" "${password_file}"
         else
             password=$(generate_password)
-            printf "  Random password has been generated and stored in %s\n" "${passwordFile}"
+            printf "  Random password has been generated and stored in %s\n" "${password_file}"
         fi
     fi
 
@@ -111,30 +111,30 @@ create_batch_databases() {
     done
 }
 
-function checkHashUpdate() {
-    local inputString="${1:?Input string required}"
-    local hashFile="${2:?Hash file required}"
-    local calculatedHash
+function check_hash_update() {
+    local input_string="${1:?Input string required}"
+    local hash_file="${2:?Hash file required}"
+    local calculated_hash
 
     # Calculate SHA256 hash of the input string
-    calculatedHash=$(echo -n "${inputString}" | sha256sum | awk '{print $1}')
+    calculated_hash=$(echo -n "${input_string}" | sha256sum | awk '{print $1}')
 
-    if [ ! -f "${hashFile}" ]; then
-        printf "Warning: Hash file '%s' doesn't exist. Creating a new one with hash '%s'.\n" "${hashFile}" "${calculatedHash}" >&2
+    if [ ! -f "${hash_file}" ]; then
+        printf "Warning: Hash file '%s' doesn't exist. Creating a new one with hash '%s'.\n" "${hash_file}" "${calculated_hash}" >&2
 
         # Create a new hash file with the new hash and return 1 to indicate that the hash has changed (since there was no previous hash)
-        printf "%s" "${calculatedHash}" >"${hashFile}"
+        printf "%s" "${calculated_hash}" >"${hash_file}"
         return 1
     fi
 
     # Compare the new hash with the stored hash
-    if [ "${calculatedHash}" == "$(cat "${hashFile}")" ]; then
+    if [ "${calculated_hash}" == "$(cat "${hash_file}")" ]; then
         # Hashes are the same, meaning there is nothing to update
         return 0
     fi
 
     # Update the hash file with the new hash and return 1 to indicate that the hash has changed
-    printf "%s" "${calculatedHash}" >"${hashFile}"
+    printf "%s" "${calculated_hash}" >"${hash_file}"
     return 1
 }
 
@@ -180,12 +180,12 @@ main() {
 
     printf "Calculating MARIADB_INIT_USERS and MARIADB_INIT_DATABASES hashes...\n"
 
-    if checkHashUpdate "${MARIADB_INIT_USERS}" "/config/.mariadb_init_users.hash"; then
+    if check_hash_update "${MARIADB_INIT_USERS}" "/config/.mariadb_init_users.hash"; then
         printf "MARIADB_INIT_USERS unchanged. Skipping users initialization.\n"
         MARIADB_INIT_USERS=""
     fi
 
-    if checkHashUpdate "${MARIADB_INIT_DATABASES}" "/config/.mariadb_init_databases.hash"; then
+    if check_hash_update "${MARIADB_INIT_DATABASES}" "/config/.mariadb_init_databases.hash"; then
         printf "MARIADB_INIT_DATABASES unchanged. Skipping databases initialization.\n"
         MARIADB_INIT_DATABASES=""
     fi
