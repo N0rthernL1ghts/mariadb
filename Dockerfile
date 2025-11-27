@@ -1,6 +1,6 @@
 ARG MARIADB_VERSION="10.11.5"
 
-FROM ghcr.io/hairyhenderson/gomplate:v4.3.2-alpine AS gomplate
+FROM ghcr.io/hairyhenderson/gomplate:v4.3.3-alpine AS gomplate
 
 # Build rootfs
 FROM scratch AS rootfs
